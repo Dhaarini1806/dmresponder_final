@@ -80,14 +80,42 @@
                 <button class="px-3 py-1 text-[10px] font-bold text-gray-500 hover:text-gray-900">90D</button>
             </div>
         </div>
-        <div class="h-64 flex items-end space-x-2">
-            <div class="flex-1 bg-indigo-50 rounded-t-sm h-[20%]"></div>
-            <div class="flex-1 bg-indigo-100 rounded-t-sm h-[35%]"></div>
-            <div class="flex-1 bg-indigo-200 rounded-t-sm h-[25%]"></div>
-            <div class="flex-1 bg-indigo-300 rounded-t-sm h-[45%]"></div>
-            <div class="flex-1 bg-indigo-400 rounded-t-sm h-[60%]"></div>
-            <div class="flex-1 bg-indigo-500 rounded-t-sm h-[80%]"></div>
-            <div class="flex-1 bg-indigo-600 rounded-t-sm h-[100%]"></div>
+        <div class="h-64 w-full relative mt-4">
+            <svg width="100%" height="100%" viewBox="0 0 400 150" preserveAspectRatio="none" class="chart-svg overflow-visible">
+                <defs>
+                    <linearGradient id="purpleGradient" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stop-color="#933fe2" stop-opacity="0.3"></stop>
+                        <stop offset="100%" stop-color="#933fe2" stop-opacity="0"></stop>
+                    </linearGradient>
+                    
+                    <clipPath id="revealClip">
+                        <rect x="0" y="-10" width="0" height="170">
+                            <animate attributeName="width" from="0" to="410" dur="1.5s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.4 0 0.2 1" />
+                        </rect>
+                    </clipPath>
+                </defs>
+        
+                <!-- Grid Lines -->
+                <g stroke="#f3f4f6" stroke-width="1" stroke-dasharray="4,4">
+                    <line x1="0" y1="30" x2="400" y2="30" />
+                    <line x1="0" y1="70" x2="400" y2="70" />
+                    <line x1="0" y1="110" x2="400" y2="110" />
+                    <line x1="0" y1="150" x2="400" y2="150" />
+                </g>
+
+                <g clip-path="url(#revealClip)">
+                    <!-- Filled Area -->
+                    <path d="M0,150 L0,120 C50,110 80,130 130,90 C180,50 220,100 280,60 C330,20 370,30 400,10 L400,150 Z" fill="url(#purpleGradient)"></path>
+                    
+                    <!-- Line -->
+                    <path d="M0,120 C50,110 80,130 130,90 C180,50 220,100 280,60 C330,20 370,30 400,10" fill="none" stroke="#933fe2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+                    
+                    <!-- Data Points -->
+                    <circle cx="130" cy="90" r="5" fill="white" stroke="#933fe2" stroke-width="3"></circle>
+                    <circle cx="280" cy="60" r="5" fill="white" stroke="#933fe2" stroke-width="3"></circle>
+                    <circle cx="400" cy="10" r="5" fill="white" stroke="#933fe2" stroke-width="3"></circle>
+                </g>
+            </svg>
         </div>
     </div>
     
@@ -104,7 +132,7 @@
 <div class="card p-0 overflow-hidden">
     <div class="px-8 py-4 border-b border-gray-100 flex items-center justify-between">
         <h3 class="font-bold text-gray-900">Recent activity</h3>
-        <a href="{% url 'inbox' %}" class="text-xs font-bold text-indigo-600 hover:underline">Open inbox →</a>
+        <a href="{% url 'inbox' %}" class="text-xs font-bold text-[#933fe2] hover:underline">Open inbox →</a>
     </div>
     <div class="divide-y divide-gray-50" id="activityFeed">
         <!-- Dynamic Content -->
@@ -132,7 +160,7 @@
                         topAutoContainer.innerHTML += `
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center text-xs">
+                                    <div class="w-8 h-8 bg-gray-100 text-[#933fe2] rounded-lg flex items-center justify-center text-xs">
                                         <i class="fas fa-robot"></i>
                                     </div>
                                     <div>
@@ -157,7 +185,7 @@
                         activityContainer.innerHTML += `
                             <div class="px-8 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
                                 <div class="flex items-center space-x-4">
-                                    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">${act.initials}</div>
+                                    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-[#933fe2] font-bold text-xs">${act.initials}</div>
                                     <div>
                                         <p class="text-sm text-gray-900"><span class="font-bold">${act.name}</span> captured as new lead from ${act.source}</p>
                                         <p class="text-xs text-gray-400 mt-1">${act.time}</p>

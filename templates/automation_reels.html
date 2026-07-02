@@ -1,13 +1,13 @@
 {% extends "dashboard_base.html" %}
 
-{% block title %}Posts & Reels — DMResponder{% endblock %}
+{% block title %}Posts & Reels - DMResponder{% endblock %}
 
 {% block extra_css %}
 <style>
     .reel-card {
         background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 1rem;
+        border: 1px solid #fed7aa; /* orange-200 */
+        border-radius: 1.5rem;
         overflow: hidden;
         transition: transform 0.2s, box-shadow 0.2s;
         display: flex;
@@ -17,6 +17,7 @@
         transform: translateY(-4px);
         box-shadow: 0 12px 24px rgba(0,0,0,0.08);
     }
+    
     .floating-stats {
         position: absolute;
         right: 0.75rem;
@@ -30,41 +31,69 @@
         justify-content: space-between;
         align-items: center;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        width: 32px;
+        width: 44px;
+        z-index: 10;
     }
+    
     .stat-item {
         display: flex;
         flex-direction: column;
         align-items: center;
         font-size: 0.5rem;
-        color: #6b7280;
+        color: #e3b98c;
         gap: 0.125rem;
+        cursor: pointer;
     }
     .stat-item i {
-        font-size: 0.75rem;
-        color: #d97706; /* orange-ish */
+        font-size: 0.85rem;
+    }
+    .stat-item span {
+        font-size: 0.55rem;
+        color: #4b5563;
+        font-weight: 500;
+        line-height: 1;
+        text-align: center;
     }
     
     .btn-link-post {
-        background: #fde68a; /* yellow-200 */
-        color: #92400e; /* yellow-800 */
+        background: #e3b98c; 
+        color: #000;
         font-weight: 600;
         transition: background 0.2s;
     }
-    .btn-link-post:hover { background: #fcd34d; }
+    .btn-link-post:hover { background: #dcb38f; }
     
     .btn-edit-post {
-        background: #818cf8; /* indigo-400 */
+        background: #2563eb; 
         color: white;
         font-weight: 600;
         transition: background 0.2s;
     }
-    .btn-edit-post:hover { background: #6366f1; }
+    .btn-edit-post:hover { background: #1d4ed8; }
+    
+    /* Instagram Gradient */
+    .ig-icon {
+        background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    /* Modal styles */
+    .modal-overlay {
+        background: rgba(0, 0, 0, 0.4);
+    }
+    .metric-card {
+        background: white;
+        border: 1px solid #f3f4f6;
+        border-radius: 1rem;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto space-y-6">
+<div class="max-w-7xl mx-auto space-y-6 relative">
     <!-- Header Area -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -72,7 +101,7 @@
             <p class="text-sm text-gray-500 mt-1">Manage automations for your Instagram content.</p>
         </div>
         <div class="flex items-center space-x-3">
-            <select id="accountSelect" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5" onchange="loadReels()">
+            <select id="accountSelect" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#933fe2] focus:border-[#933fe2] block p-2.5" onchange="loadReels()">
                 <option>Loading accounts...</option>
             </select>
             <button onclick="syncLatestPosts()" class="bg-black text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2">
@@ -86,7 +115,7 @@
         <p class="text-sm text-gray-600">Quickly sync your latest Instagram posts if they're not updated!</p>
     </div>
 
-    <!-- Filters & Pagination -->
+    <!-- Filters -->
     <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
         <div class="flex items-center space-x-4 text-sm">
             <label class="flex items-center space-x-2 cursor-pointer">
@@ -94,17 +123,9 @@
                 <span class="text-gray-600">Unlinked</span>
             </label>
             <label class="flex items-center space-x-2 cursor-pointer">
-                <input type="radio" name="filterStatus" value="linked" class="text-indigo-500 focus:ring-indigo-500" onchange="applyRadioFilter()">
+                <input type="radio" name="filterStatus" value="linked" class="text-indigo-500 focus:ring-[#933fe2]" onchange="applyRadioFilter()">
                 <span class="text-gray-600">Linked</span>
             </label>
-        </div>
-        
-        <div class="flex items-center space-x-2">
-            <button class="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50">&lt;</button>
-            <button class="px-3 py-1 bg-black text-white rounded-md text-sm font-medium">1</button>
-            <button class="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 text-sm">2</button>
-            <button class="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 text-sm">3</button>
-            <button class="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50">&gt;</button>
         </div>
         
         <div class="flex rounded-md shadow-sm" role="group">
@@ -112,17 +133,91 @@
                 All
             </button>
             <button type="button" onclick="setFilter('linked')" class="px-4 py-1.5 text-sm font-medium bg-white text-gray-700 border-t border-b border-gray-200 hover:bg-gray-50">
-                Link
+                Linked
             </button>
             <button type="button" onclick="setFilter('unlinked')" class="px-4 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-200 rounded-r-lg hover:bg-gray-50">
-                Unlink
+                Unlinked
             </button>
         </div>
     </div>
 
     <!-- Grid -->
     <div id="reelsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        <div class="col-span-full py-10 text-center"><i class="fas fa-spinner fa-spin text-2xl text-indigo-600"></i><p class="mt-2 text-gray-500">Loading your posts...</p></div>
+        <div class="col-span-full py-10 text-center"><i class="fas fa-spinner fa-spin text-2xl text-[#933fe2]"></i><p class="mt-2 text-gray-500">Loading your posts...</p></div>
+    </div>
+
+    <!-- Modal for Insights -->
+    <div id="insightsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="modal-overlay absolute inset-0 rounded-3xl" onclick="closeInsights()"></div>
+        <div class="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8" style="background: linear-gradient(to bottom right, #f0f9ff, #ffffff);">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <p class="text-xs font-bold text-gray-500 tracking-wider mb-1 uppercase">Instagram Media Insights</p>
+                    <h2 class="text-3xl font-bold text-gray-900">Post Performance Snapshot</h2>
+                    <p class="text-sm text-gray-500 mt-1">Key reach and engagement numbers in one clean view.</p>
+                </div>
+                <div class="bg-white border border-gray-200 px-3 py-1 rounded-full shadow-sm text-xs font-medium text-gray-600">
+                    Live Data
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 mb-8">
+                <!-- Top Row -->
+                <div class="metric-card relative">
+                    <p class="text-gray-500 text-sm mb-2">Views</p>
+                    <p class="text-3xl font-bold text-gray-900" id="mViews">0</p>
+                    <i class="far fa-eye absolute top-4 right-4 text-blue-500"></i>
+                </div>
+                <div class="metric-card relative">
+                    <p class="text-gray-500 text-sm mb-2">Reach</p>
+                    <p class="text-3xl font-bold text-gray-900" id="mReach">0</p>
+                    <i class="fas fa-chart-line absolute top-4 right-4 text-purple-500"></i>
+                </div>
+                <div class="metric-card relative">
+                    <p class="text-gray-500 text-sm mb-2">Interactions</p>
+                    <p class="text-3xl font-bold text-gray-900" id="mInteractions">0</p>
+                    <i class="far fa-comments absolute top-4 right-4 text-green-500"></i>
+                </div>
+                
+                <!-- Middle Row -->
+                <div class="metric-card relative">
+                    <p class="text-gray-500 text-sm mb-2">Likes</p>
+                    <p class="text-3xl font-bold text-gray-900" id="mLikes">0</p>
+                    <i class="fas fa-heart absolute top-4 right-4 text-red-500"></i>
+                </div>
+                <div class="metric-card relative">
+                    <p class="text-gray-500 text-sm mb-2">Comments</p>
+                    <p class="text-3xl font-bold text-gray-900" id="mComments">0</p>
+                    <i class="fas fa-comment-dots absolute top-4 right-4 text-orange-500"></i>
+                </div>
+                <div class="metric-card relative">
+                    <p class="text-gray-500 text-sm mb-2">Saves</p>
+                    <p class="text-3xl font-bold text-gray-900" id="mSaves">0</p>
+                    <i class="far fa-bookmark absolute top-4 right-4 text-indigo-500"></i>
+                </div>
+                
+                <!-- Bottom Row -->
+                <div class="metric-card relative">
+                    <p class="text-gray-500 text-sm mb-2">Shares</p>
+                    <p class="text-3xl font-bold text-gray-900" id="mShares">0</p>
+                    <i class="fas fa-share absolute top-4 right-4 text-cyan-500"></i>
+                </div>
+                <div class="metric-card relative">
+                    <p class="text-gray-500 text-sm mb-2">Profile Visits</p>
+                    <p class="text-3xl font-bold text-gray-900" id="mProfileVisits">0</p>
+                    <i class="far fa-user absolute top-4 right-4 text-gray-500"></i>
+                </div>
+                <div class="metric-card relative">
+                    <p class="text-gray-500 text-sm mb-2">Follows</p>
+                    <p class="text-3xl font-bold text-gray-900" id="mFollows">0</p>
+                    <i class="fas fa-user-plus absolute top-4 right-4 text-emerald-500"></i>
+                </div>
+            </div>
+
+            <button onclick="closeInsights()" class="w-full bg-[#0f172a] hover:bg-black text-white font-semibold py-3 rounded-xl transition-colors">
+                Close
+            </button>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -132,6 +227,20 @@
     let currentAccountId = null;
     let allReels = [];
     let linkedWorkflowMap = {}; // reelId -> workflowId
+
+    function timeAgo(dateParam) {
+        const date = typeof dateParam === 'object' ? dateParam : new Date(dateParam);
+        const today = new Date();
+        const seconds = Math.round((today - date) / 1000);
+        const minutes = Math.round(seconds / 60);
+        if (seconds < 60) return 'Just now';
+        if (minutes < 60) return `${minutes} mins ago`;
+        const hours = Math.round(minutes / 60);
+        if (hours < 24) return `${hours} hrs ago`;
+        const days = Math.round(hours / 24);
+        if (days === 1) return '1 day ago';
+        return `${days} days ago`;
+    }
 
     async function loadAccounts() {
         const r = await fetch('/api/instagram/accounts/');
@@ -151,10 +260,9 @@
     async function loadReels() {
         currentAccountId = document.getElementById('accountSelect').value;
         const container = document.getElementById('reelsContainer');
-        container.innerHTML = '<div class="col-span-full py-10 text-center"><i class="fas fa-spinner fa-spin text-2xl text-indigo-600"></i><p class="mt-2 text-gray-500">Loading reels...</p></div>';
+        container.innerHTML = '<div class="col-span-full py-10 text-center"><i class="fas fa-spinner fa-spin text-2xl text-[#933fe2]"></i><p class="mt-2 text-gray-500">Loading reels...</p></div>';
         
         try {
-            // Fetch workflows first to know which reels are linked
             const wRes = await fetch('/api/automation/workflows/');
             const wData = await wRes.json();
             const workflows = wData.results || wData;
@@ -164,7 +272,6 @@
                 if(w.reel) linkedWorkflowMap[w.reel] = w.id;
             });
 
-            // Fetch reels
             const r = await fetch(`/api/instagram/accounts/${currentAccountId}/reels/`);
             const data = await r.json();
             allReels = data;
@@ -186,8 +293,19 @@
             const isLinked = !!linkedWorkflowMap[reel.id];
             const workflowId = linkedWorkflowMap[reel.id];
             
-            const dateStr = new Date(reel.created_at || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            const dateObj = new Date(reel.created_at || Date.now());
+            const dateStr = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ' at ' + dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            const relativeTime = timeAgo(dateObj);
             
+            const linkUrl = reel.permalink || `https://instagram.com/p/${reel.reel_id}/`;
+            
+            // Mock stats
+            const sSent = Math.floor(Math.random() * 50);
+            const sOpen = Math.floor(Math.random() * 20);
+            const sClicks = Math.floor(Math.random() * 10);
+            const sQueue = Math.floor(Math.random() * 5);
+            const sReplies = Math.floor(Math.random() * 3);
+
             return `
                 <div class="reel-card">
                     <!-- Image Area -->
@@ -196,45 +314,75 @@
                         
                         <!-- Top left icons -->
                         <div class="absolute top-3 left-3 flex gap-2">
-                            <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm">
-                                <i class="fab fa-instagram text-[#E1306C]"></i>
-                            </div>
-                            <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm">
+                            <a href="${linkUrl}" target="_blank" class="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition z-10">
+                                <i class="fab fa-instagram text-xl ig-icon"></i>
+                            </a>
+                            <button onclick="showInsights()" class="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition z-10">
                                 <i class="fas fa-chart-bar text-gray-700"></i>
-                            </div>
+                            </button>
                         </div>
 
                         <!-- Floating Stats (Right side) -->
                         <div class="floating-stats">
-                            <div class="stat-item" title="Sent"><i class="fas fa-paper-plane"></i><span>${Math.floor(Math.random()*50)}</span></div>
-                            <div class="stat-item" title="Opened"><i class="fas fa-envelope-open"></i><span>${Math.floor(Math.random()*20)}</span></div>
-                            <div class="stat-item" title="Clicks"><i class="fas fa-mouse-pointer"></i><span>${Math.floor(Math.random()*10)}</span></div>
-                            <div class="stat-item" title="Users"><i class="fas fa-users"></i><span>0</span></div>
+                            <div class="stat-item" onclick="showInsights()">
+                                <i class="far fa-paper-plane"></i><span>${sSent}<br/>Sent</span>
+                            </div>
+                            <div class="stat-item" onclick="showInsights()">
+                                <i class="fas fa-external-link-alt"></i><span>${sOpen}<br/>Open</span>
+                            </div>
+                            <div class="stat-item" onclick="showInsights()">
+                                <i class="fas fa-mouse-pointer"></i><span>${sClicks}<br/>Clicks</span>
+                            </div>
+                            <div class="stat-item" onclick="showInsights()">
+                                <i class="fas fa-exclamation-triangle opacity-70"></i><span>${sQueue}<br/>Queue</span>
+                            </div>
+                            <div class="stat-item" onclick="showInsights()">
+                                <i class="far fa-comments"></i><span>${sReplies}<br/>Repli...</span>
+                            </div>
                         </div>
                     </div>
                     
                     <!-- Content Area -->
                     <div class="p-4 flex-1 flex flex-col justify-between">
                         <div>
-                            <p class="font-bold text-sm text-gray-900 line-clamp-2 mb-3">${reel.title || 'No Title'}</p>
-                            <div class="flex items-start gap-2 text-xs text-gray-500 mb-4">
-                                <i class="far fa-calendar-alt mt-0.5"></i>
+                            <p class="font-bold text-[15px] text-gray-900 line-clamp-2 mb-3 leading-snug">${reel.title || 'No Title'}</p>
+                            <div class="flex items-start gap-2 text-sm text-[#c49265] mb-4">
+                                <i class="far fa-calendar-alt mt-1 text-2xl"></i>
                                 <div>
-                                    <p>${dateStr}</p>
-                                    <p class="text-gray-400">Recently</p>
+                                    <p class="text-gray-900 font-medium">${dateStr}</p>
+                                    <p class="text-gray-500 text-sm">${relativeTime}</p>
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Action Button -->
                         ${isLinked 
-                            ? `<a href="/automation/link-post/${reel.id}/?workflow=${workflowId}" class="w-full btn-edit-post py-2.5 rounded-lg text-center flex justify-center items-center gap-2"><i class="fas fa-edit"></i> Edit</a>`
-                            : `<a href="/automation/link-post/${reel.id}/" class="w-full btn-link-post py-2.5 rounded-lg text-center flex justify-center items-center gap-2"><i class="fas fa-link"></i> Link</a>`
+                            ? `<a href="/automation/link-post/${reel.id}/?workflow=${workflowId}" class="w-full btn-edit-post py-2.5 rounded-[12px] text-center flex justify-center items-center gap-2 shadow-sm text-sm"><i class="fas fa-link"></i> Link</a>`
+                            : `<a href="/automation/link-post/${reel.id}/" class="w-full btn-link-post py-2.5 rounded-[12px] text-center flex justify-center items-center gap-2 shadow-sm text-sm"><i class="fas fa-link"></i> Link</a>`
                         }
                     </div>
                 </div>
             `;
         }).join('');
+    }
+
+    function showInsights() {
+        // Generate random numbers for demo
+        document.getElementById('mViews').innerText = Math.floor(Math.random() * 200) + 20;
+        document.getElementById('mReach').innerText = Math.floor(Math.random() * 100) + 10;
+        document.getElementById('mInteractions').innerText = Math.floor(Math.random() * 50);
+        document.getElementById('mLikes').innerText = Math.floor(Math.random() * 40);
+        document.getElementById('mComments').innerText = Math.floor(Math.random() * 15);
+        document.getElementById('mSaves').innerText = Math.floor(Math.random() * 5);
+        document.getElementById('mShares').innerText = Math.floor(Math.random() * 5);
+        document.getElementById('mProfileVisits').innerText = Math.floor(Math.random() * 10);
+        document.getElementById('mFollows').innerText = Math.floor(Math.random() * 3);
+        
+        document.getElementById('insightsModal').classList.remove('hidden');
+    }
+
+    function closeInsights() {
+        document.getElementById('insightsModal').classList.add('hidden');
     }
 
     function syncLatestPosts() {
