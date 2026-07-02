@@ -1,0 +1,160 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Leads CRM — DMResponder{% endblock %}
+
+{% block extra_css %}
+<style>
+    .kanban-column {
+        min-width: 300px;
+        background-color: #f9fafb;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        height: calc(100vh - 250px);
+        overflow-y: auto;
+    }
+    .kanban-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .kanban-card:hover {
+        border-color: #4f46e5;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-10 flex items-center justify-between">
+    <div>
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900">Leads CRM</h1>
+        <p class="mt-1 text-gray-500">Track your conversion pipeline from first comment to closed deal.</p>
+    </div>
+    <div class="flex items-center space-x-3">
+        <div class="relative">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input type="text" placeholder="Filter leads..." class="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-48">
+        </div>
+        <button class="btn-primary">
+            <i class="fas fa-plus mr-2"></i> Add Lead
+        </button>
+    </div>
+</div>
+
+<div class="flex space-x-6 overflow-x-auto pb-6">
+    <!-- New Leads -->
+    <div class="kanban-column flex-shrink-0">
+        <div class="flex items-center justify-between mb-4 px-2">
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">New Leads</span>
+                <span class="bg-gray-200 text-gray-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full" id="count-new">0</span>
+            </div>
+            <button class="text-gray-400 hover:text-gray-600"><i class="fas fa-plus text-xs"></i></button>
+        </div>
+        <div id="col-new" class="min-h-[100px]"></div>
+    </div>
+
+    <!-- Contacted -->
+    <div class="kanban-column flex-shrink-0">
+        <div class="flex items-center justify-between mb-4 px-2">
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Contacted</span>
+                <span class="bg-gray-200 text-gray-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full" id="count-contacted">0</span>
+            </div>
+            <button class="text-gray-400 hover:text-gray-600"><i class="fas fa-plus text-xs"></i></button>
+        </div>
+        <div id="col-contacted" class="min-h-[100px]"></div>
+    </div>
+
+    <!-- Qualified -->
+    <div class="kanban-column flex-shrink-0">
+        <div class="flex items-center justify-between mb-4 px-2">
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Qualified</span>
+                <span class="bg-gray-200 text-gray-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full" id="count-qualified">0</span>
+            </div>
+            <button class="text-gray-400 hover:text-gray-600"><i class="fas fa-plus text-xs"></i></button>
+        </div>
+        <div id="col-qualified" class="min-h-[100px]"></div>
+    </div>
+
+    <!-- Proposal -->
+    <div class="kanban-column flex-shrink-0">
+        <div class="flex items-center justify-between mb-4 px-2">
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Proposal</span>
+                <span class="bg-gray-200 text-gray-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full" id="count-proposal">0</span>
+            </div>
+            <button class="text-gray-400 hover:text-gray-600"><i class="fas fa-plus text-xs"></i></button>
+        </div>
+        <div id="col-proposal" class="min-h-[100px]"></div>
+    </div>
+
+    <!-- Closed -->
+    <div class="kanban-column flex-shrink-0">
+        <div class="flex items-center justify-between mb-4 px-2">
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Closed</span>
+                <span class="bg-gray-200 text-gray-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full" id="count-closed">0</span>
+            </div>
+            <button class="text-gray-400 hover:text-gray-600"><i class="fas fa-plus text-xs"></i></button>
+        </div>
+        <div id="col-closed" class="min-h-[100px]"></div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    async function loadLeads() {
+        const r = await fetch('/api/crm/leads/');
+        const data = await r.json();
+        const leads = data.results || [];
+        
+        const cols = {
+            'new': document.getElementById('col-new'),
+            'contacted': document.getElementById('col-contacted'),
+            'qualified': document.getElementById('col-qualified'),
+            'proposal': document.getElementById('col-proposal'),
+            'converted': document.getElementById('col-closed')
+        };
+        
+        const counts = { 'new': 0, 'contacted': 0, 'qualified': 0, 'proposal': 0, 'converted': 0 };
+
+        leads.forEach(lead => {
+            const status = lead.status || 'new';
+            counts[status]++;
+            const card = document.createElement('div');
+            card.className = 'kanban-card';
+            card.innerHTML = `
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">${lead.source || 'Instagram'}</span>
+                    <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+                </div>
+                <p class="text-sm font-bold text-gray-900 mb-1">${lead.name}</p>
+                <p class="text-xs text-gray-500 mb-4">${lead.email || 'No email'}</p>
+                <div class="flex items-center justify-between">
+                    <div class="flex -space-x-1">
+                        <div class="w-5 h-5 rounded-full bg-gray-100 border border-white flex items-center justify-center text-[8px] font-bold text-gray-500">MK</div>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-400">${new Date(lead.created_at).toLocaleDateString()}</span>
+                </div>
+            `;
+            if (cols[status]) cols[status].appendChild(card);
+        });
+
+        Object.keys(counts).forEach(key => {
+            const el = document.getElementById(`count-${key === 'converted' ? 'closed' : key}`);
+            if (el) el.textContent = counts[key];
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadLeads);
+</script>
+{% endblock %}
+{% endblock %}
+

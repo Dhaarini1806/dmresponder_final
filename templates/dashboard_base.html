@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DMResponder — Dashboard{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            color: #111827;
+        }
+        .sidebar {
+            background-color: #ffffff;
+            border-right: 1px solid #f3f4f6;
+        }
+        .nav-item {
+            display: flex;
+            items-center: center;
+            padding: 0.625rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #4b5563;
+            transition: all 0.2s;
+        }
+        .nav-item:hover {
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+        .nav-item.active {
+            background-color: #f3f4f6;
+            color: #4f46e5;
+        }
+        .nav-item i {
+            width: 1.25rem;
+            margin-right: 0.75rem;
+            font-size: 1rem;
+        }
+        .card {
+            background: white;
+            border: 1px solid #f3f4f6;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .btn-primary {
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+        .badge {
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-success { background-color: #ecfdf5; color: #059669; }
+        .badge-warning { background-color: #fffbeb; color: #d97706; }
+        .badge-info { background-color: #eff6ff; color: #2563eb; }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white;
+            border-radius: 1rem;
+            width: 100%;
+            max-width: 32rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="antialiased">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="sidebar w-64 flex-shrink-0 flex flex-col">
+            <div class="p-6 flex items-center space-x-2">
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight">DMResponder</span>
+            </div>
+            
+            <nav class="flex-1 overflow-y-auto px-4 py-4 space-y-1">
+                <div class="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Main</div>
+                <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-chart-pie"></i> Dashboard
+                </a>
+                <a href="{% url 'automation_reels' %}" class="nav-item {% if request.resolver_match.url_name == 'automation_reels' %}active{% endif %}">
+                    <i class="fas fa-bolt"></i> Posts & Reels
+                </a>
+                <a href="{% url 'engagement_starter' %}" class="nav-item {% if request.resolver_match.url_name == 'engagement_starter' %}active{% endif %}">
+                    <i class="fas fa-star"></i> Engagement Starter
+                </a>
+                <a href="{% url 'inbox' %}" class="nav-item {% if 'inbox' in request.path %}active{% endif %}">
+                    <i class="fas fa-inbox"></i> Inbox
+                </a>
+                <a href="{% url 'content_calendar' %}" class="nav-item {% if 'calendar' in request.path %}active{% endif %}">
+                    <i class="fas fa-calendar"></i> Scheduler
+                </a>
+                
+                <div class="pt-6 px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Growth</div>
+                <a href="{% url 'crm_leads' %}" class="nav-item {% if 'crm' in request.path %}active{% endif %}">
+                    <i class="fas fa-users"></i> Leads CRM
+                </a>
+                <a href="{% url 'broadcasts' %}" class="nav-item {% if 'broadcasts' in request.path %}active{% endif %}">
+                    <i class="fas fa-paper-plane"></i> Campaigns
+                </a>
+                <a href="{% url 'analytics' %}" class="nav-item {% if 'analytics' in request.path %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i> Analytics
+                </a>
+                
+                <div class="pt-6 px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">System</div>
+                <a href="{% url 'connected_accounts' %}" class="nav-item {% if 'connected-accounts' in request.path %}active{% endif %}">
+                    <i class="fas fa-link"></i> Integrations
+                </a>
+                <a href="{% url 'settings' %}" class="nav-item {% if 'settings' in request.path %}active{% endif %}">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </nav>
+            
+            <div class="p-4 border-t border-gray-100">
+                <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
+                        {{ request.user.username|slice:":1"|upper }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-900 truncate">{{ request.user.username }}</p>
+                        <p class="text-xs text-gray-500 truncate">Pro Plan</p>
+                    </div>
+                    <a href="{% url 'logout' %}" class="text-gray-400 hover:text-red-600 transition-colors">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto flex flex-col">
+            <!-- Header -->
+            <header class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-8 flex-shrink-0">
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" placeholder="Search..." class="pl-10 pr-4 py-2 bg-gray-50 border-transparent rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none w-64 transition-all">
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <a href="{% url 'automation_reels' %}" class="btn-primary">
+                        <i class="fas fa-plus mr-2"></i> New Automation
+                    </a>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="p-8">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+        
+        // Close modal on click outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

@@ -1,0 +1,214 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Engagement Starter — DMResponder{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Reuse Phone Mockup CSS */
+    .phone-mockup {
+        width: 320px;
+        height: 650px;
+        border: 12px solid #111;
+        border-radius: 40px;
+        background: #fff;
+        position: relative;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .phone-notch {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 25px;
+        background: #111;
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
+        z-index: 10;
+    }
+    .phone-header {
+        padding: 40px 15px 15px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: white;
+    }
+    .phone-body {
+        flex: 1;
+        background: #fafafa;
+        padding: 15px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .phone-footer {
+        padding: 15px;
+        border-top: 1px solid #e5e7eb;
+        background: white;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .dm-bubble {
+        background: #efefef;
+        padding: 12px;
+        border-radius: 18px;
+        font-size: 0.85rem;
+        max-width: 85%;
+        color: #262626;
+        align-self: flex-start;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+    }
+    .dm-bubble.outgoing {
+        background: #0084ff;
+        color: white;
+        align-self: flex-end;
+    }
+    .dm-button {
+        display: block;
+        margin-top: 8px;
+        padding: 8px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 600;
+        color: #0084ff;
+        cursor: pointer;
+    }
+
+    .section-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Breadcrumbs -->
+    <div class="text-sm text-gray-500 mb-6 flex items-center gap-2">
+        <a href="/dashboard/" class="hover:text-gray-900">Home</a> &gt; 
+        <span class="text-gray-900 font-semibold">Engagement Starter</span>
+    </div>
+
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Engagement Starter</h1>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Left Column: Form -->
+        <div class="flex-1">
+            <div class="section-card">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold">Engagement Starter</h3>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="masterToggle" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    </label>
+                </div>
+
+                <div class="space-y-4 mb-8">
+                    <label class="flex justify-between items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                        <span class="text-sm text-gray-700 font-medium">Automatically enable on new posts/stories <i class="fas fa-info-circle text-gray-400"></i></span>
+                        <input type="checkbox" id="autoNew" class="w-4 h-4 text-indigo-600 rounded">
+                    </label>
+                    <label class="flex justify-between items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                        <span class="text-sm text-gray-700 font-medium">Enable for Already linked Posts/Stories <i class="fas fa-info-circle text-gray-400"></i></span>
+                        <input type="checkbox" id="autoLinked" class="w-4 h-4 text-indigo-600 rounded">
+                    </label>
+                </div>
+
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Message</label>
+                <textarea id="dmMessage" rows="4" class="w-full border border-gray-300 rounded-lg p-3 mb-6 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Type your DM message here..." oninput="updatePreview()">Hi there! I'm thrilled to have you here—thank you for your interest! 😍 Tap the button below, and I'll send over the link right away ✨</textarea>
+
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Button Title</label>
+                <input type="text" id="btnTitle" value="Send Link Now" class="w-full border border-gray-300 rounded-lg p-3 mb-6 focus:ring-indigo-500 focus:border-indigo-500" oninput="updatePreview()">
+
+                <p class="text-xs text-gray-500 italic mb-6">Notes: This feature automatically sends an introductory message or DM to users who have never interacted before. It initiates engagement by sending a first-time message, starting the conversation with those users.</p>
+
+                <div class="flex justify-center">
+                    <button onclick="saveStarter()" id="saveBtn" class="bg-white border border-gray-300 text-gray-900 px-8 py-2.5 rounded-lg font-bold hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Phone Mockup -->
+        <div class="w-full lg:w-auto flex justify-center lg:sticky lg:top-8 self-start">
+            <div class="phone-mockup">
+                <div class="phone-notch"></div>
+                <div class="phone-header">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-chevron-left text-gray-800"></i>
+                        <span class="font-bold text-sm">@your_account</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-gray-800">
+                        <i class="fas fa-phone-alt"></i>
+                        <i class="fas fa-video"></i>
+                    </div>
+                </div>
+                <div class="phone-body">
+                    <div class="dm-bubble outgoing">
+                        <p id="previewText">Hi there! I'm thrilled to have you here—thank you for your interest! 😍 Tap the button below, and I'll send over the link right away ✨</p>
+                        <a id="previewBtn" class="dm-button" href="#" target="_blank">Send Link Now</a>
+                    </div>
+                    
+                    <div class="dm-bubble mt-4">
+                        <p class="text-gray-800">Thank you for your lovely comment and likes.</p>
+                        <p class="text-xs text-gray-400 mt-2">Automation Powered by @dmresponder</p>
+                    </div>
+                </div>
+                <div class="phone-footer">
+                    <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600"><i class="fas fa-camera"></i></div>
+                    <div class="flex-1 bg-gray-100 rounded-full py-2 px-4 text-gray-400 text-sm">Message...</div>
+                    <i class="far fa-image text-gray-400 text-lg"></i>
+                    <i class="far fa-heart text-gray-400 text-lg"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function updatePreview() {
+        const text = document.getElementById('dmMessage').value;
+        const btnTitle = document.getElementById('btnTitle').value;
+        
+        document.getElementById('previewText').textContent = text || 'Type a message to see it here!';
+        
+        const previewBtn = document.getElementById('previewBtn');
+        if (btnTitle) {
+            previewBtn.textContent = btnTitle;
+            previewBtn.classList.remove('hidden');
+        } else {
+            previewBtn.classList.add('hidden');
+        }
+    }
+
+    function saveStarter() {
+        const btn = document.getElementById('saveBtn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        btn.disabled = true;
+        
+        // Mock save logic for engagement starter settings
+        setTimeout(() => {
+            alert('Engagement Starter settings saved successfully!');
+            btn.innerHTML = '<i class="fas fa-save"></i> Save';
+            btn.disabled = false;
+        }, 800);
+    }
+</script>
+{% endblock %}

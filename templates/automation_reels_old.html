@@ -1,0 +1,914 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Automations — DMResponder{% endblock %}
+
+{% block extra_css %}
+<style>
+    .reel-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 0.75rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .reel-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    }
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .status-active { background: #dcfce7; color: #166534; }
+    .status-inactive { background: #f3f4f6; color: #6b7280; }
+    .workflow-item {
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        transition: all 0.2s;
+    }
+    .workflow-item:hover {
+        border-color: #6366f1;
+        background: #f5f3ff;
+    }
+    
+    /* Builder Canvas specific styles */
+    #builderOverlay {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        background: #f9fafb;
+        display: none;
+        flex-direction: column;
+    }
+    #builderOverlay.active { display: flex; }
+    
+    #builderHeader {
+        height: 64px;
+        background: white;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 1.5rem;
+        flex-shrink: 0;
+        z-index: 10;
+    }
+    
+    #builderBody {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+    }
+    
+    #nodePalette {
+        width: 250px;
+        background: white;
+        border-right: 1px solid #e5e7eb;
+        padding: 1rem;
+        overflow-y: auto;
+        flex-shrink: 0;
+        z-index: 10;
+    }
+    
+    .palette-node {
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        background: white;
+        cursor: grab;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: box-shadow 0.2s;
+        user-select: none;
+    }
+    .palette-node:hover { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    
+    .palette-node i {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 0.375rem;
+        color: white;
+    }
+    .bg-node-trigger { background-color: #f59e0b; }
+    .bg-node-action { background-color: #3b82f6; }
+    .bg-node-logic { background-color: #8b5cf6; }
+    
+    #builderCanvas {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        background-color: #f3f4f6;
+        background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+        background-size: 20px 20px;
+    }
+    
+    .canvas-node {
+        position: absolute;
+        width: 220px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        cursor: grab;
+        display: flex;
+        flex-direction: column;
+        user-select: none;
+    }
+    .canvas-node.dragging { cursor: grabbing; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    .canvas-node.selected { border-color: #4f46e5; box-shadow: 0 0 0 2px rgba(79,70,229,0.2); }
+    
+    .node-header {
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+    .node-content { padding: 0.75rem; }
+    
+    .node-port {
+        width: 12px;
+        height: 12px;
+        background: #fff;
+        border: 2px solid #9ca3af;
+        border-radius: 50%;
+        position: absolute;
+        cursor: crosshair;
+    }
+    .node-port:hover { border-color: #4f46e5; transform: scale(1.2); }
+    .node-port.in { top: -6px; left: 50%; transform: translateX(-50%); }
+    .node-port.out { bottom: -6px; left: 50%; transform: translateX(-50%); }
+    
+    #canvasSvg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+    }
+    
+    .connection-path {
+        fill: none;
+        stroke: #9ca3af;
+        stroke-width: 2;
+    }
+    .connection-path:hover {
+        stroke: #ef4444;
+        cursor: pointer;
+        pointer-events: stroke;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(4px);
+        align-items: center;
+        justify-content: center;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+        background: white;
+        border-radius: 1rem;
+        max-width: 560px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+    }
+    
+    .toast {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        padding: 1rem 1.5rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        z-index: 300;
+        transform: translateY(100px);
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast-success { background: #166534; color: white; }
+    .toast-error { background: #991b1b; color: white; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="mb-8 flex items-center justify-between flex-wrap gap-4">
+    <div>
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900">Reel Automations</h1>
+        <p class="mt-1 text-gray-500">Select a reel → create a keyword automation → auto-DM commenters.</p>
+    </div>
+    <div class="flex items-center space-x-3">
+        <label class="text-sm font-bold text-gray-500">Account:</label>
+        <select id="accountSelect" onchange="loadReels()" class="px-4 py-2 rounded-xl border border-gray-200 bg-white font-semibold text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+            <option value="">Loading...</option>
+        </select>
+    </div>
+</div>
+
+<!-- Reels Grid -->
+<div id="reelsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+    <div class="col-span-full py-20 text-center text-gray-400">
+        <i class="fas fa-spinner fa-spin text-2xl mb-4"></i>
+        <p>Loading reels...</p>
+    </div>
+</div>
+
+<!-- Active Workflows Section -->
+<div class="mb-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">Saved Workflows</h2>
+    <div id="workflowsList" class="space-y-3">
+        <p class="text-gray-400 text-sm py-8 text-center">No workflows yet. Select a reel above and create one.</p>
+    </div>
+</div>
+
+<!-- Simulate Comment Modal -->
+<div id="simulateModal" class="modal">
+    <div class="modal-content p-8">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-gray-900">Test Automation</h2>
+            <button onclick="closeModal('simulateModal')" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-lg mb-6">
+            <p class="text-sm text-indigo-700"><strong>Reel:</strong> <span id="simReelTitle">—</span></p>
+        </div>
+
+        <div class="space-y-5">
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Comment Text</label>
+                <input type="text" id="commentText" placeholder="e.g. PRICE"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" value="PRICE">
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Commenter Username</label>
+                <input type="text" id="commenterUsername" placeholder="e.g. john_doe"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" value="demo_user">
+            </div>
+
+            <div class="p-4 bg-blue-50 border border-blue-100 rounded-lg">
+                <p class="text-sm text-blue-700"><strong>What happens:</strong> A simulated comment is created. If it matches an active workflow's keyword, the automation will trigger (send DM, save lead, etc).</p>
+            </div>
+
+            <button onclick="simulateComment()" id="simulateBtn"
+                class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700 transition-colors">
+                <i class="fas fa-play mr-2"></i> Run Simulation
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Builder Fullscreen Overlay -->
+<div id="builderOverlay">
+    <div id="builderHeader">
+        <div class="flex items-center gap-4">
+            <button onclick="closeBuilder()" class="text-gray-500 hover:text-gray-900 px-2 py-1 rounded-md hover:bg-gray-100">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div>
+                <input type="text" id="builderWorkflowName" value="New Workflow" class="font-bold text-lg text-gray-900 bg-transparent border-none outline-none focus:ring-0 focus:border-b-2 border-indigo-500 p-0" />
+                <p class="text-xs text-gray-500" id="builderReelInfo">Reel: Untitled</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <span id="builderStatus" class="status-badge status-inactive">Draft</span>
+            <button onclick="saveWorkflow(false)" id="btnSaveBuilder" class="btn-primary bg-white text-gray-700 border border-gray-300 hover:bg-gray-50">
+                <i class="fas fa-save mr-1"></i> Save Draft
+            </button>
+            <button onclick="saveWorkflow(true)" id="btnPublishBuilder" class="btn-primary">
+                <i class="fas fa-rocket mr-1"></i> Save & Publish
+            </button>
+        </div>
+    </div>
+    
+    <div id="builderBody">
+        <!-- Node Palette -->
+        <div id="nodePalette">
+            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Triggers</h3>
+            
+            <div class="palette-node" data-type="trigger" data-title="Comment on Reel">
+                <i class="fas fa-comment-dots bg-node-trigger"></i>
+                <div class="text-sm font-semibold text-gray-800">Comment on Reel</div>
+            </div>
+            
+            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mt-6 mb-4">Actions</h3>
+            
+            <div class="palette-node" data-type="send_dm" data-title="Send DM">
+                <i class="fas fa-paper-plane bg-node-action"></i>
+                <div class="text-sm font-semibold text-gray-800">Send DM</div>
+            </div>
+            
+            <div class="palette-node" data-type="save_lead" data-title="Save Lead CRM">
+                <i class="fas fa-user-plus bg-node-action"></i>
+                <div class="text-sm font-semibold text-gray-800">Save Lead CRM</div>
+            </div>
+            
+            <div class="palette-node" data-type="notify_admin" data-title="Notify Admin">
+                <i class="fas fa-bell bg-node-action"></i>
+                <div class="text-sm font-semibold text-gray-800">Notify Admin</div>
+            </div>
+
+            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mt-6 mb-4">Logic</h3>
+            
+            <div class="palette-node" data-type="delay" data-title="Time Delay">
+                <i class="fas fa-clock bg-node-logic"></i>
+                <div class="text-sm font-semibold text-gray-800">Time Delay</div>
+            </div>
+        </div>
+        
+        <!-- Canvas -->
+        <div id="builderCanvas">
+            <svg id="canvasSvg"></svg>
+            <div id="canvasNodes" class="absolute inset-0 z-10 pointer-events-none"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Node Config Modal -->
+<div id="nodeConfigModal" class="modal" style="z-index: 250;">
+    <div class="modal-content p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-gray-900" id="configModalTitle">Configure Node</h2>
+            <button onclick="closeModal('nodeConfigModal')" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="nodeConfigBody" class="space-y-4">
+            <!-- Dynamic config fields will go here -->
+        </div>
+        <div class="mt-6 flex justify-end gap-3">
+            <button onclick="closeModal('nodeConfigModal')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200">Cancel</button>
+            <button onclick="saveNodeConfig()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700">Save Config</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+{% block extra_js %}
+<script>
+    // ── Global State ───────────────────────────────────────────
+    let currentAccountId = null;
+    let selectedReelId = null;
+    let builderWorkflowId = null; // null if creating new
+    
+    // Canvas State
+    let nodes = {}; // key: nodeId, value: nodeData
+    let connections = []; // array of {source, target}
+    let nodeCounter = 0;
+    
+    // Drag & Drop specific
+    let tempConnection = { active: false, source: null };
+    let currentlySelectedNodeId = null;
+
+    // ── Helpers ────────────────────────────────────────────────
+    function getCookie(name) {
+        let v = null;
+        if (document.cookie) {
+            for (const c of document.cookie.split(';')) {
+                const t = c.trim();
+                if (t.startsWith(name + '=')) { v = decodeURIComponent(t.substring(name.length + 1)); break; }
+            }
+        }
+        return v;
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = `toast toast-${type} show`;
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function generateId() {
+        return 'node_' + Math.random().toString(36).substring(2, 9);
+    }
+
+    // ── Load Accounts & Reels & Workflows ──────────────────────
+    async function loadAccounts() {
+        const r = await fetch('/api/instagram/accounts/');
+        const data = await r.json();
+        const select = document.getElementById('accountSelect');
+        const accounts = data.results || data;
+        if (accounts.length > 0) {
+            select.innerHTML = accounts.map(a => `<option value="${a.id}">${a.username} (${a.status})</option>`).join('');
+            currentAccountId = accounts[0].id;
+            loadReels();
+        } else {
+            select.innerHTML = '<option value="">No accounts connected</option>';
+            document.getElementById('reelsContainer').innerHTML = `<p class="col-span-full py-10 text-center text-gray-500">Go to Integrations to connect an account.</p>`;
+        }
+    }
+
+    async function loadReels() {
+        currentAccountId = document.getElementById('accountSelect').value;
+        const container = document.getElementById('reelsContainer');
+        container.innerHTML = '<div class="col-span-full py-10 text-center"><i class="fas fa-spinner fa-spin"></i> Loading reels...</div>';
+        try {
+            const r = await fetch(`/api/instagram/accounts/${currentAccountId}/reels/`);
+            const data = await r.json();
+            if (data.length > 0) {
+                container.innerHTML = data.map(reel => `
+                    <div class="reel-card card group">
+                        <div class="aspect-[9/16] bg-gray-900 relative">
+                            ${reel.thumbnail_url ? `<img src="${reel.thumbnail_url}" class="absolute inset-0 w-full h-full object-cover">` : ''}
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                <button data-id="${reel.id}" data-title="${(reel.title||'').replace(/"/g, '&quot;')}" onclick="openBuilderForReel(this.dataset.id, this.dataset.title)" class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-indigo-600 hover:scale-110 shadow-lg" title="Create Automation"><i class="fas fa-bolt"></i></button>
+                                <button data-id="${reel.id}" data-title="${(reel.title||'').replace(/"/g, '&quot;')}" onclick="openSimulate(this.dataset.id, this.dataset.title)" class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white hover:scale-110 shadow-lg" title="Test"><i class="fas fa-play"></i></button>
+                            </div>
+                            <div class="absolute bottom-2 left-2 right-2 text-white"><p class="text-sm font-bold truncate">${reel.title || 'Untitled'}</p></div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<p class="col-span-full py-10 text-center text-gray-400">No reels found.</p>';
+            }
+        } catch (err) {
+            container.innerHTML = `<p class="col-span-full py-10 text-center text-red-400">Error: ${err.message}</p>`;
+        }
+        loadWorkflows();
+    }
+
+    async function loadWorkflows() {
+        const container = document.getElementById('workflowsList');
+        try {
+            const r = await fetch('/api/automation/workflows/');
+            const data = await r.json();
+            const workflows = data.results || data;
+            if (workflows.length > 0) {
+                container.innerHTML = workflows.map(w => `
+                    <div class="workflow-item flex items-center justify-between bg-white">
+                        <div class="flex items-center space-x-4 cursor-pointer flex-1" onclick="openBuilderForEdit(${w.id}, '${w.name.replace(/'/g, "\\'")}', '${w.status}')">
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center ${w.status === 'active' ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-400'}">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-900 text-sm">${w.name}</p>
+                                <p class="text-xs text-gray-400">Status: ${w.status} | Trigger: ${w.trigger_config?.keyword || 'Any Comment'}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <button onclick="toggleWorkflow(${w.id}, '${w.status}')" class="text-xs font-bold ${w.status === 'active' ? 'text-red-500' : 'text-green-600'}">
+                                ${w.status === 'active' ? 'Pause' : 'Activate'}
+                            </button>
+                            <button onclick="deleteWorkflow(${w.id})" class="text-gray-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<p class="text-gray-400 text-sm py-8 text-center">No workflows yet.</p>';
+            }
+        } catch (err) { console.error(err); }
+    }
+
+    // ── Builder Core ───────────────────────────────────────────
+    function openBuilderForReel(reelId, reelTitle) {
+        selectedReelId = reelId;
+        builderWorkflowId = null;
+        nodes = {};
+        connections = [];
+        tempConnection = { active: false, source: null };
+        document.getElementById('builderWorkflowName').value = 'New Reel Automation';
+        document.getElementById('builderReelInfo').textContent = `Reel ID: ${reelId} | ${reelTitle}`;
+        document.getElementById('builderStatus').textContent = 'Draft';
+        document.getElementById('builderStatus').className = 'status-badge status-inactive';
+        
+        // Auto-add Trigger node
+        const tId = generateId();
+        nodes[tId] = { id: tId, type: 'trigger', title: 'Comment on Reel', x: 50, y: 50, config: { keyword: '' } };
+        
+        renderCanvas();
+        document.getElementById('builderOverlay').classList.add('active');
+    }
+
+    async function openBuilderForEdit(workflowId, name, status) {
+        builderWorkflowId = workflowId;
+        nodes = {};
+        connections = [];
+        tempConnection = { active: false, source: null };
+        document.getElementById('builderWorkflowName').value = name;
+        document.getElementById('builderStatus').textContent = status;
+        document.getElementById('builderStatus').className = `status-badge ${status==='active'?'status-active':'status-inactive'}`;
+        
+        try {
+            const res = await fetch(`/api/automation/workflows/${workflowId}/`);
+            const wf = await res.json();
+            
+            // Since backend serializer might just return IDs, a robust fetch of nodes is needed.
+            const nRes = await fetch(`/api/automation/nodes/?workflow=${workflowId}`);
+            const nodesData = await nRes.json();
+            
+            nodes = {};
+            const idMap = {}; // PK to node_id
+            (nodesData.results || nodesData).forEach(n => {
+                nodes[n.node_id] = { id: n.node_id, type: n.node_type, title: formatNodeType(n.node_type), x: n.position_x, y: n.position_y, config: n.config || {} };
+                idMap[n.id] = n.node_id;
+            });
+            
+            const cRes = await fetch(`/api/automation/connections/?workflow=${workflowId}`);
+            const connsData = await cRes.json();
+            connections = [];
+            (connsData.results || connsData).forEach(c => {
+                if (idMap[c.source_node] && idMap[c.target_node]) {
+                    connections.push({ source: idMap[c.source_node], target: idMap[c.target_node] });
+                }
+            });
+
+            selectedReelId = wf.reel;
+            document.getElementById('builderReelInfo').textContent = wf.reel ? `Reel ID: ${wf.reel}` : 'No Reel Assigned';
+            
+            renderCanvas();
+            document.getElementById('builderOverlay').classList.add('active');
+        } catch(e) {
+            showToast('Failed to load workflow details', 'error');
+        }
+    }
+
+    function formatNodeType(type) {
+        const m = { 'trigger': 'Comment on Reel', 'send_dm': 'Send DM', 'save_lead': 'Save Lead CRM', 'delay': 'Time Delay', 'notify_admin': 'Notify Admin' };
+        return m[type] || type;
+    }
+
+    function closeBuilder() {
+        document.getElementById('builderOverlay').classList.remove('active');
+    }
+
+    // ── InteractJS Setup ───────────────────────────────────────
+    // 1. Draggable Palette Items
+    interact('.palette-node').draggable({
+        listeners: {
+            start(event) {
+                event.target.setAttribute('data-x', 0);
+                event.target.setAttribute('data-y', 0);
+                event.target.style.zIndex = 1000;
+            },
+            move(event) {
+                const target = event.target;
+                const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+                const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+                target.style.transform = `translate(${x}px, ${y}px)`;
+                target.setAttribute('data-x', x);
+                target.setAttribute('data-y', y);
+            },
+            end(event) {
+                const target = event.target;
+                target.style.transform = 'translate(0px, 0px)';
+                target.setAttribute('data-x', 0);
+                target.setAttribute('data-y', 0);
+                target.style.zIndex = '';
+            }
+        }
+    });
+
+    // 2. Dropzone on Canvas
+    interact('#builderCanvas').dropzone({
+        accept: '.palette-node',
+        overlap: 0.1,
+        ondrop: function (event) {
+            const dragEl = event.relatedTarget;
+            const type = dragEl.getAttribute('data-type');
+            const title = dragEl.getAttribute('data-title');
+            
+            const rect = event.target.getBoundingClientRect();
+            const x = event.dragEvent.clientX - rect.left - 100;
+            const y = event.dragEvent.clientY - rect.top - 30;
+            
+            const id = generateId();
+            nodes[id] = { id, type, title, x: Math.max(0, x), y: Math.max(0, y), config: {} };
+            renderCanvas();
+        }
+    });
+
+    // 3. Draggable Canvas Nodes
+    interact('.canvas-node').draggable({
+        inertia: true,
+        modifiers: [
+            interact.modifiers.restrictRect({ restriction: 'parent', endOnly: false })
+        ],
+        listeners: {
+            start(event) { event.target.classList.add('dragging'); },
+            move(event) {
+                const target = event.target;
+                const id = target.id;
+                nodes[id].x += event.dx;
+                nodes[id].y += event.dy;
+                target.style.transform = `translate(${nodes[id].x}px, ${nodes[id].y}px)`;
+                drawConnections();
+            },
+            end(event) { event.target.classList.remove('dragging'); }
+        }
+    });
+
+    // ── Canvas Rendering ───────────────────────────────────────
+    function renderCanvas() {
+        const container = document.getElementById('canvasNodes');
+        container.innerHTML = '';
+        container.style.pointerEvents = 'auto'; // allow clicking children
+        
+        Object.values(nodes).forEach(n => {
+            const nodeEl = document.createElement('div');
+            nodeEl.id = n.id;
+            nodeEl.className = 'canvas-node pointer-events-auto';
+            nodeEl.style.transform = `translate(${n.x}px, ${n.y}px)`;
+            
+            let icon = 'fa-cog';
+            let color = 'text-gray-500';
+            if (n.type === 'trigger') { icon = 'fa-comment-dots'; color = 'text-amber-500'; }
+            if (['send_dm', 'save_lead', 'notify_admin'].includes(n.type)) { icon = 'fa-bolt'; color = 'text-blue-500'; }
+            if (n.type === 'delay') { icon = 'fa-clock'; color = 'text-purple-500'; }
+            
+            let configSummary = 'Click to configure';
+            if (n.type === 'trigger' && n.config.keyword) configSummary = `Keyword: "${n.config.keyword}"`;
+            else if (n.type === 'trigger') configSummary = `Any Comment`;
+            if (n.type === 'send_dm' && n.config.message) configSummary = `Message: "${n.config.message.substring(0, 15)}..."`;
+            if (n.type === 'delay' && n.config.seconds) configSummary = `Wait: ${n.config.seconds}s`;
+            if (n.type === 'save_lead') configSummary = `Saves commenter to CRM`;
+            if (n.type === 'notify_admin') configSummary = `Sends notification`;
+            
+            nodeEl.innerHTML = `
+                ${n.type !== 'trigger' ? '<div class="node-port in" onclick="startConnection(event, \''+n.id+'\')"></div>' : ''}
+                <div class="node-header">
+                    <i class="fas ${icon} ${color}"></i>
+                    <span>${n.title}</span>
+                    <button class="ml-auto text-gray-400 hover:text-red-500 p-1" onclick="deleteNode('${n.id}')"><i class="fas fa-times text-xs"></i></button>
+                </div>
+                <div class="node-content text-xs text-gray-500 cursor-pointer" onclick="openNodeConfig('${n.id}')">
+                    ${configSummary}
+                </div>
+                <div class="node-port out" onclick="endConnection(event, \''+n.id+'\')"></div>
+            `;
+            container.appendChild(nodeEl);
+        });
+        
+        drawConnections();
+    }
+
+    function deleteNode(id) {
+        delete nodes[id];
+        connections = connections.filter(c => c.source !== id && c.target !== id);
+        renderCanvas();
+    }
+
+    // ── Connections Drawing ────────────────────────────────────
+    
+    // Assign these properties to window so they are globally accessible via onclick
+    window.startConnection = function(e, id) {
+        e.stopPropagation();
+        if (tempConnection.active) {
+            if (tempConnection.source !== id) {
+                // Prevent duplicate connections
+                if (!connections.find(c => c.source === tempConnection.source && c.target === id)) {
+                    connections.push({ source: tempConnection.source, target: id });
+                }
+                tempConnection.active = false;
+                showToast('Nodes connected');
+                renderCanvas();
+            }
+        }
+    };
+    
+    window.endConnection = function(e, id) {
+        e.stopPropagation();
+        tempConnection = { active: true, source: id };
+        showToast('Now click an input port (top circle) on another node', 'info');
+    };
+
+    function drawConnections() {
+        const svg = document.getElementById('canvasSvg');
+        svg.innerHTML = '';
+        
+        connections.forEach((conn, index) => {
+            const sNode = nodes[conn.source];
+            const tNode = nodes[conn.target];
+            if (!sNode || !tNode) return;
+            
+            const x1 = sNode.x + 110;
+            const y1 = sNode.y + 75; // Approx bottom of node
+            const x2 = tNode.x + 110;
+            const y2 = tNode.y - 5;  // Approx top of node
+            
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            const d = `M ${x1} ${y1} C ${x1} ${y1+50}, ${x2} ${y2-50}, ${x2} ${y2}`;
+            path.setAttribute("d", d);
+            path.setAttribute("class", "connection-path");
+            path.onclick = () => { if(confirm('Delete connection?')) { connections.splice(index,1); drawConnections(); } };
+            svg.appendChild(path);
+        });
+    }
+
+    // ── Node Configuration ─────────────────────────────────────
+    window.openNodeConfig = function(id) {
+        currentlySelectedNodeId = id;
+        const n = nodes[id];
+        const body = document.getElementById('nodeConfigBody');
+        document.getElementById('configModalTitle').textContent = `Configure ${n.title}`;
+        
+        let html = '';
+        if (n.type === 'trigger') {
+            html = `
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Trigger Keyword</label>
+                    <input type="text" id="cfgKeyword" class="w-full border p-2 rounded" value="${n.config.keyword || ''}" placeholder="Leave blank for any comment">
+                </div>
+            `;
+        } else if (n.type === 'send_dm') {
+            html = `
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">DM Message</label>
+                    <textarea id="cfgMessage" class="w-full border p-2 rounded" rows="4">${n.config.message || ''}</textarea>
+                </div>
+            `;
+        } else if (n.type === 'delay') {
+            html = `
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Seconds to wait</label>
+                    <input type="number" id="cfgSeconds" class="w-full border p-2 rounded" value="${n.config.seconds || 0}">
+                </div>
+            `;
+        } else {
+            html = `<p class="text-gray-500">No configuration required for this node.</p>`;
+        }
+        
+        body.innerHTML = html;
+        openModal('nodeConfigModal');
+    };
+
+    window.saveNodeConfig = function() {
+        const id = currentlySelectedNodeId;
+        const n = nodes[id];
+        if (n.type === 'trigger') {
+            n.config.keyword = document.getElementById('cfgKeyword').value.trim();
+        } else if (n.type === 'send_dm') {
+            n.config.message = document.getElementById('cfgMessage').value.trim();
+        } else if (n.type === 'delay') {
+            n.config.seconds = parseInt(document.getElementById('cfgSeconds').value) || 0;
+        }
+        closeModal('nodeConfigModal');
+        renderCanvas();
+    };
+
+    // ── Save & Publish API ─────────────────────────────────────
+    window.saveWorkflow = async function(publish = false) {
+        const name = document.getElementById('builderWorkflowName').value.trim() || 'Untitled';
+        const status = publish ? 'active' : 'draft';
+        const csrfToken = getCookie('csrftoken');
+        const headers = { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken };
+        
+        // Find trigger config to set at workflow level for fast queries
+        const triggerNode = Object.values(nodes).find(n => n.type === 'trigger');
+        const triggerKeyword = triggerNode ? (triggerNode.config.keyword || '') : '';
+        
+        let wfId = builderWorkflowId;
+        
+        try {
+            document.getElementById('btnPublishBuilder').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            
+            // 1. Create or Update Workflow
+            const wfData = {
+                name: name,
+                status: status,
+                trigger_type: 'comment',
+                trigger_config: { keyword: triggerKeyword, reel_id: selectedReelId },
+                reel: selectedReelId
+            };
+            
+            let res;
+            if (wfId) {
+                res = await fetch(`/api/automation/workflows/${wfId}/`, { method: 'PATCH', headers, body: JSON.stringify(wfData) });
+            } else {
+                res = await fetch('/api/automation/workflows/', { method: 'POST', headers, body: JSON.stringify(wfData) });
+            }
+            if (!res.ok) throw new Error('Failed to save workflow metadata');
+            const workflow = await res.json();
+            wfId = workflow.id;
+            builderWorkflowId = wfId;
+            
+            // 2. Bulk Create Nodes & Connections
+            const bulkData = {
+                nodes: Object.values(nodes).map(n => ({
+                    node_id: n.id,
+                    node_type: n.type,
+                    position_x: n.x,
+                    position_y: n.y,
+                    config: n.config
+                })),
+                connections: connections.map(c => ({
+                    source_node: c.source,
+                    target_node: c.target
+                }))
+            };
+            
+            const bulkRes = await fetch(`/api/automation/workflows/${wfId}/nodes_bulk/`, {
+                method: 'POST', headers, body: JSON.stringify(bulkData)
+            });
+            
+            if (!bulkRes.ok) throw new Error('Failed to save nodes and connections');
+            
+            document.getElementById('builderStatus').textContent = status;
+            document.getElementById('builderStatus').className = `status-badge ${status==='active'?'status-active':'status-inactive'}`;
+            
+            showToast(`Workflow ${publish ? 'Published' : 'Saved'}!`);
+            loadWorkflows(); // update bg list
+            
+            if (publish) closeBuilder(); // exit on publish
+            
+        } catch (e) {
+            showToast(e.message, 'error');
+        } finally {
+            document.getElementById('btnPublishBuilder').innerHTML = '<i class="fas fa-rocket mr-1"></i> Save & Publish';
+        }
+    };
+
+    // Toggle / Delete from list
+    window.toggleWorkflow = async function(id, currentStatus) {
+        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+        await fetch(`/api/automation/workflows/${id}/`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+            body: JSON.stringify({ status: newStatus })
+        });
+        showToast(`Workflow ${newStatus === 'active' ? 'activated' : 'paused'}`);
+        loadWorkflows();
+    };
+
+    window.deleteWorkflow = async function(id) {
+        if (!confirm('Delete this workflow?')) return;
+        await fetch(`/api/automation/workflows/${id}/`, {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': getCookie('csrftoken') }
+        });
+        showToast('Workflow deleted');
+        loadWorkflows();
+    };
+
+    // ── Simulate ───────────────────────────────────────────────
+    window.openSimulate = function(reelId, reelTitle) {
+        selectedReelId = reelId;
+        document.getElementById('simReelTitle').textContent = reelTitle;
+        openModal('simulateModal');
+    };
+
+    window.simulateComment = async function() {
+        const commentText = document.getElementById('commentText').value.trim();
+        const username = document.getElementById('commenterUsername').value.trim();
+        if (!commentText || !username) { showToast('Fill all fields', 'error'); return; }
+
+        const btn = document.getElementById('simulateBtn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Running...';
+        btn.disabled = true;
+
+        try {
+            const r = await fetch('/api/instagram/comments/simulate_comment/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                body: JSON.stringify({ reel_id: selectedReelId, comment_text: commentText, commenter_username: username })
+            });
+            if (r.ok) {
+                const data = await r.json();
+                showToast(`Simulation complete! Triggered: ${data.processed}`);
+                closeModal('simulateModal');
+            } else {
+                const err = await r.json();
+                showToast(`Simulation failed: ${err.error}`, 'error');
+            }
+        } catch (err) {
+            showToast(`Error: ${err.message}`, 'error');
+        } finally {
+            btn.innerHTML = '<i class="fas fa-play mr-2"></i> Run Simulation';
+            btn.disabled = false;
+        }
+    };
+
+    // Init
+    document.addEventListener('DOMContentLoaded', loadAccounts);
+</script>
+{% endblock %}
+{% endblock %}

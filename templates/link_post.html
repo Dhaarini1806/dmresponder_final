@@ -1,0 +1,411 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Link Post — DMResponder{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Phone Mockup */
+    .phone-mockup {
+        width: 320px;
+        height: 650px;
+        border: 12px solid #111;
+        border-radius: 40px;
+        background: #fff;
+        position: relative;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .phone-notch {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 25px;
+        background: #111;
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
+        z-index: 10;
+    }
+    .phone-header {
+        padding: 40px 15px 15px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: white;
+    }
+    .phone-body {
+        flex: 1;
+        background: #fafafa;
+        padding: 15px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .phone-footer {
+        padding: 15px;
+        border-top: 1px solid #e5e7eb;
+        background: white;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .dm-bubble {
+        background: #efefef;
+        padding: 12px;
+        border-radius: 18px;
+        font-size: 0.85rem;
+        max-width: 85%;
+        color: #262626;
+        align-self: flex-start;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+    }
+    .dm-bubble.outgoing {
+        background: #0084ff;
+        color: white;
+        align-self: flex-end;
+    }
+    .dm-button {
+        display: block;
+        margin-top: 8px;
+        padding: 8px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 600;
+        color: #0084ff;
+        cursor: pointer;
+    }
+
+    /* Accordions / Sections */
+    .section-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+        overflow: hidden;
+    }
+    .section-header {
+        padding: 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        background: #f9fafb;
+        font-weight: 600;
+    }
+    .section-body {
+        padding: 1.5rem;
+        border-top: 1px solid #e5e7eb;
+    }
+    .tab-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        background: white;
+        color: #4b5563;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+    }
+    .tab-btn.active {
+        border-color: #111;
+        border-width: 2px;
+        color: #111;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Breadcrumbs -->
+    <div class="text-sm text-gray-500 mb-6 flex items-center gap-2">
+        <a href="/dashboard/" class="hover:text-gray-900">Home</a> &gt; 
+        <a href="/automation/reels/" class="hover:text-gray-900">Post</a> &gt; 
+        <span class="text-gray-900 font-semibold">Link Post</span>
+    </div>
+
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Post Automation</h1>
+        <button onclick="saveAutomation()" id="saveBtn" class="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-indigo-700 transition-colors shadow-lg">
+            <i class="fas fa-save mr-2"></i> Save Automation
+        </button>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Left Column: Form -->
+        <div class="flex-1">
+            
+            <!-- Trigger Type -->
+            <div class="section-card">
+                <div class="section-header" onclick="toggleSection('triggerSection')">
+                    <div>
+                        <h3 class="text-lg">Choose Trigger Type</h3>
+                        <p class="text-sm text-gray-500 font-normal">Choose how to activate this feature based on conditions.</p>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="section-body" id="triggerSection">
+                    <div class="flex flex-wrap gap-3 mb-6">
+                        <button type="button" class="tab-btn active" onclick="setTriggerType('keyword', this)">Keywords</button>
+                        <button type="button" class="tab-btn" onclick="setTriggerType('all', this)">All Comments</button>
+                        <button type="button" class="tab-btn" onclick="setTriggerType('mention', this)">@mention</button>
+                    </div>
+
+                    <div id="keywordConfig">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Trigger Keywords</label>
+                        <input type="text" id="triggerKeywords" placeholder="e.g. LINK, INFO, YES" class="w-full border border-gray-300 rounded-lg p-3 mb-4 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Exclude Keyword Trigger <i class="fas fa-info-circle text-gray-400"></i></label>
+                    <input type="text" id="excludeKeywords" placeholder="e.g. BAD, NO, STOP" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+            </div>
+
+            <!-- Configuration -->
+            <div class="section-card">
+                <div class="section-header" onclick="toggleSection('configSection')">
+                    <h3 class="text-lg">Configuration</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="section-body" id="configSection">
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-semibold text-gray-700">Send once per user per post</span>
+                                <input type="checkbox" id="sendOnce" class="w-4 h-4 text-indigo-600 rounded">
+                            </label>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Reply Time Delay (Seconds)</label>
+                            <input type="number" id="replyDelay" placeholder="0" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message Template -->
+            <div class="section-card">
+                <div class="section-header" onclick="toggleSection('messageSection')">
+                    <h3 class="text-lg">Message - Media Template</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="section-body" id="messageSection">
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <button type="button" class="tab-btn active">Text Message</button>
+                        <button type="button" class="tab-btn text-gray-400 cursor-not-allowed">Media Template <i class="fas fa-crown text-yellow-500 ml-1"></i></button>
+                        <button type="button" class="tab-btn text-gray-400 cursor-not-allowed">Quick Replies <i class="fas fa-crown text-yellow-500 ml-1"></i></button>
+                    </div>
+
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Text Description</label>
+                    <textarea id="dmMessage" rows="4" class="w-full border border-gray-300 rounded-lg p-3 mb-6 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Type your DM message here..." oninput="updatePreview()"></textarea>
+
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">URL (When this button is pressed)</label>
+                    <input type="url" id="btnUrl" placeholder="https://..." class="w-full border border-gray-300 rounded-lg p-3 mb-4 focus:ring-indigo-500 focus:border-indigo-500">
+
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Button Title</label>
+                    <input type="text" id="btnTitle" placeholder="e.g. Click Here" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-indigo-500 focus:border-indigo-500" oninput="updatePreview()">
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Phone Mockup -->
+        <div class="w-full lg:w-auto flex justify-center lg:sticky lg:top-8 self-start">
+            <div class="phone-mockup">
+                <div class="phone-notch"></div>
+                <div class="phone-header">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-chevron-left text-gray-800"></i>
+                        <span class="font-bold text-sm">@your_account</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-gray-800">
+                        <i class="fas fa-phone-alt"></i>
+                        <i class="fas fa-video"></i>
+                    </div>
+                </div>
+                <div class="phone-body">
+                    <div class="dm-bubble outgoing">
+                        <p id="previewText">Type a message to see it here!</p>
+                        <a id="previewBtn" class="dm-button hidden" href="#" target="_blank">Button</a>
+                    </div>
+                </div>
+                <div class="phone-footer">
+                    <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600"><i class="fas fa-camera"></i></div>
+                    <div class="flex-1 bg-gray-100 rounded-full py-2 px-4 text-gray-400 text-sm">Message...</div>
+                    <i class="far fa-image text-gray-400 text-lg"></i>
+                    <i class="far fa-heart text-gray-400 text-lg"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const REEL_ID = {{ reel_id|default:"null" }};
+    let currentTriggerType = 'keyword';
+    let workflowId = null;
+
+    function toggleSection(id) {
+        // Just visual toggling for accordion if needed
+        // For simplicity, keeping them all open by default as per screenshot
+    }
+
+    function setTriggerType(type, btn) {
+        currentTriggerType = type;
+        const btns = btn.parentElement.querySelectorAll('.tab-btn');
+        btns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        document.getElementById('keywordConfig').style.display = (type === 'keyword') ? 'block' : 'none';
+    }
+
+    function updatePreview() {
+        const text = document.getElementById('dmMessage').value;
+        const btnTitle = document.getElementById('btnTitle').value;
+        
+        document.getElementById('previewText').textContent = text || 'Type a message to see it here!';
+        
+        const previewBtn = document.getElementById('previewBtn');
+        if (btnTitle) {
+            previewBtn.textContent = btnTitle;
+            previewBtn.classList.remove('hidden');
+        } else {
+            previewBtn.classList.add('hidden');
+        }
+    }
+
+    // Load existing workflow if parameter exists
+    window.onload = async () => {
+        updatePreview();
+        const urlParams = new URLSearchParams(window.location.search);
+        workflowId = urlParams.get('workflow');
+        
+        if (workflowId) {
+            document.getElementById('saveBtn').innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Loading...';
+            try {
+                const r = await fetch(`/api/automation/workflows/${workflowId}/`);
+                const wf = await r.json();
+                
+                if (wf.trigger_config) {
+                    if (wf.trigger_config.keyword === '') {
+                        setTriggerType('all', document.querySelectorAll('.tab-btn')[1]);
+                    } else {
+                        document.getElementById('triggerKeywords').value = wf.trigger_config.keyword || '';
+                    }
+                    document.getElementById('excludeKeywords').value = wf.trigger_config.exclude || '';
+                }
+                
+                // Fetch nodes to get DM config
+                const nRes = await fetch(`/api/automation/nodes/?workflow=${workflowId}`);
+                const nodesData = await nRes.json();
+                const nodes = nodesData.results || nodesData;
+                
+                const dmNode = nodes.find(n => n.node_type === 'send_dm');
+                if (dmNode && dmNode.config) {
+                    document.getElementById('dmMessage').value = dmNode.config.message || '';
+                    document.getElementById('btnTitle').value = dmNode.config.btn_title || '';
+                    document.getElementById('btnUrl').value = dmNode.config.btn_url || '';
+                    updatePreview();
+                }
+            } catch (e) {
+                console.error("Error loading workflow", e);
+            } finally {
+                document.getElementById('saveBtn').innerHTML = '<i class="fas fa-save mr-2"></i> Update Automation';
+            }
+        }
+    };
+
+    function getCookie(name) {
+        let v = null;
+        if (document.cookie) {
+            for (const c of document.cookie.split(';')) {
+                const t = c.trim();
+                if (t.startsWith(name + '=')) { v = decodeURIComponent(t.substring(name.length + 1)); break; }
+            }
+        }
+        return v;
+    }
+
+    async function saveAutomation() {
+        const btn = document.getElementById('saveBtn');
+        const origText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
+        btn.disabled = true;
+
+        const keyword = currentTriggerType === 'keyword' ? document.getElementById('triggerKeywords').value.trim() : '';
+        const exclude = document.getElementById('excludeKeywords').value.trim();
+        const sendOnce = document.getElementById('sendOnce').checked;
+        const delay = document.getElementById('replyDelay').value;
+        const message = document.getElementById('dmMessage').value;
+        const btnTitle = document.getElementById('btnTitle').value;
+        const btnUrl = document.getElementById('btnUrl').value;
+
+        try {
+            // 1. Create/Update Workflow Metadata
+            const wfData = {
+                name: "Reel Automation",
+                status: "active",
+                trigger_type: "comment",
+                trigger_config: { keyword, exclude, sendOnce, delay },
+                reel: REEL_ID
+            };
+
+            const headers = { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') };
+            let wfRes;
+            if (workflowId) {
+                wfRes = await fetch(`/api/automation/workflows/${workflowId}/`, { method: 'PATCH', headers, body: JSON.stringify(wfData) });
+            } else {
+                wfRes = await fetch('/api/automation/workflows/', { method: 'POST', headers, body: JSON.stringify(wfData) });
+            }
+            if (!wfRes.ok) throw new Error("Failed to save workflow metadata");
+            
+            const wf = await wfRes.json();
+            workflowId = wf.id;
+
+            // 2. Bulk Create standard nodes (Trigger -> Send DM -> Save Lead)
+            const tId = "node_trig_" + Date.now();
+            const dId = "node_dm_" + Date.now();
+            const lId = "node_lead_" + Date.now();
+
+            const bulkData = {
+                nodes: [
+                    { node_id: tId, node_type: 'trigger', config: { keyword, exclude } },
+                    { node_id: dId, node_type: 'send_dm', config: { message, btn_title: btnTitle, btn_url: btnUrl } },
+                    { node_id: lId, node_type: 'save_lead', config: {} }
+                ],
+                connections: [
+                    { source_node: tId, target_node: dId },
+                    { source_node: dId, target_node: lId }
+                ]
+            };
+
+            const bRes = await fetch(`/api/automation/workflows/${workflowId}/nodes_bulk/`, {
+                method: 'POST', headers, body: JSON.stringify(bulkData)
+            });
+            if (!bRes.ok) throw new Error("Failed to save configuration");
+
+            alert("Automation saved successfully!");
+            window.location.href = '/automation/reels/';
+
+        } catch (err) {
+            alert("Error: " + err.message);
+        } finally {
+            btn.innerHTML = '<i class="fas fa-check mr-2"></i> Saved';
+            setTimeout(() => {
+                btn.innerHTML = origText;
+                btn.disabled = false;
+            }, 2000);
+        }
+    }
+</script>
+{% endblock %}

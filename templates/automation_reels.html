@@ -1,0 +1,258 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Posts & Reels — DMResponder{% endblock %}
+
+{% block extra_css %}
+<style>
+    .reel-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 1rem;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+    }
+    .reel-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+    }
+    .floating-stats {
+        position: absolute;
+        right: 0.75rem;
+        top: 0.75rem;
+        bottom: 0.75rem;
+        background: white;
+        border-radius: 9999px;
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        width: 32px;
+    }
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 0.5rem;
+        color: #6b7280;
+        gap: 0.125rem;
+    }
+    .stat-item i {
+        font-size: 0.75rem;
+        color: #d97706; /* orange-ish */
+    }
+    
+    .btn-link-post {
+        background: #fde68a; /* yellow-200 */
+        color: #92400e; /* yellow-800 */
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+    .btn-link-post:hover { background: #fcd34d; }
+    
+    .btn-edit-post {
+        background: #818cf8; /* indigo-400 */
+        color: white;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+    .btn-edit-post:hover { background: #6366f1; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6">
+    <!-- Header Area -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Posts & Reels</h1>
+            <p class="text-sm text-gray-500 mt-1">Manage automations for your Instagram content.</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <select id="accountSelect" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5" onchange="loadReels()">
+                <option>Loading accounts...</option>
+            </select>
+            <button onclick="syncLatestPosts()" class="bg-black text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2">
+                <i class="fas fa-sync-alt"></i> Fetch Latest Post
+            </button>
+        </div>
+    </div>
+
+    <!-- Info Banner -->
+    <div class="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between">
+        <p class="text-sm text-gray-600">Quickly sync your latest Instagram posts if they're not updated!</p>
+    </div>
+
+    <!-- Filters & Pagination -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="flex items-center space-x-4 text-sm">
+            <label class="flex items-center space-x-2 cursor-pointer">
+                <input type="radio" name="filterStatus" value="unlinked" class="text-orange-400 focus:ring-orange-400" onchange="applyRadioFilter()">
+                <span class="text-gray-600">Unlinked</span>
+            </label>
+            <label class="flex items-center space-x-2 cursor-pointer">
+                <input type="radio" name="filterStatus" value="linked" class="text-indigo-500 focus:ring-indigo-500" onchange="applyRadioFilter()">
+                <span class="text-gray-600">Linked</span>
+            </label>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+            <button class="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50">&lt;</button>
+            <button class="px-3 py-1 bg-black text-white rounded-md text-sm font-medium">1</button>
+            <button class="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 text-sm">2</button>
+            <button class="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 text-sm">3</button>
+            <button class="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50">&gt;</button>
+        </div>
+        
+        <div class="flex rounded-md shadow-sm" role="group">
+            <button type="button" onclick="setFilter('all')" class="px-4 py-1.5 text-sm font-medium bg-black text-white border border-black rounded-l-lg hover:bg-gray-800">
+                All
+            </button>
+            <button type="button" onclick="setFilter('linked')" class="px-4 py-1.5 text-sm font-medium bg-white text-gray-700 border-t border-b border-gray-200 hover:bg-gray-50">
+                Link
+            </button>
+            <button type="button" onclick="setFilter('unlinked')" class="px-4 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-200 rounded-r-lg hover:bg-gray-50">
+                Unlink
+            </button>
+        </div>
+    </div>
+
+    <!-- Grid -->
+    <div id="reelsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div class="col-span-full py-10 text-center"><i class="fas fa-spinner fa-spin text-2xl text-indigo-600"></i><p class="mt-2 text-gray-500">Loading your posts...</p></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentAccountId = null;
+    let allReels = [];
+    let linkedWorkflowMap = {}; // reelId -> workflowId
+
+    async function loadAccounts() {
+        const r = await fetch('/api/instagram/accounts/');
+        const data = await r.json();
+        const select = document.getElementById('accountSelect');
+        const accounts = data.results || data;
+        if (accounts.length > 0) {
+            select.innerHTML = accounts.map(a => `<option value="${a.id}">${a.username} (${a.status})</option>`).join('');
+            currentAccountId = accounts[0].id;
+            loadReels();
+        } else {
+            select.innerHTML = '<option value="">No accounts connected</option>';
+            document.getElementById('reelsContainer').innerHTML = `<p class="col-span-full py-10 text-center text-gray-500">Go to Integrations to connect an account.</p>`;
+        }
+    }
+
+    async function loadReels() {
+        currentAccountId = document.getElementById('accountSelect').value;
+        const container = document.getElementById('reelsContainer');
+        container.innerHTML = '<div class="col-span-full py-10 text-center"><i class="fas fa-spinner fa-spin text-2xl text-indigo-600"></i><p class="mt-2 text-gray-500">Loading reels...</p></div>';
+        
+        try {
+            // Fetch workflows first to know which reels are linked
+            const wRes = await fetch('/api/automation/workflows/');
+            const wData = await wRes.json();
+            const workflows = wData.results || wData;
+            
+            linkedWorkflowMap = {};
+            workflows.forEach(w => {
+                if(w.reel) linkedWorkflowMap[w.reel] = w.id;
+            });
+
+            // Fetch reels
+            const r = await fetch(`/api/instagram/accounts/${currentAccountId}/reels/`);
+            const data = await r.json();
+            allReels = data;
+            
+            renderReels(allReels);
+        } catch (err) {
+            container.innerHTML = `<p class="col-span-full py-10 text-center text-red-400">Error: ${err.message}</p>`;
+        }
+    }
+
+    function renderReels(reels) {
+        const container = document.getElementById('reelsContainer');
+        if (reels.length === 0) {
+            container.innerHTML = '<p class="col-span-full py-10 text-center text-gray-400">No posts found.</p>';
+            return;
+        }
+
+        container.innerHTML = reels.map(reel => {
+            const isLinked = !!linkedWorkflowMap[reel.id];
+            const workflowId = linkedWorkflowMap[reel.id];
+            
+            const dateStr = new Date(reel.created_at || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            
+            return `
+                <div class="reel-card">
+                    <!-- Image Area -->
+                    <div class="relative h-64 bg-gray-100">
+                        ${reel.thumbnail_url ? `<img src="${reel.thumbnail_url}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center text-gray-400"><i class="fas fa-image text-4xl"></i></div>'}
+                        
+                        <!-- Top left icons -->
+                        <div class="absolute top-3 left-3 flex gap-2">
+                            <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm">
+                                <i class="fab fa-instagram text-[#E1306C]"></i>
+                            </div>
+                            <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm">
+                                <i class="fas fa-chart-bar text-gray-700"></i>
+                            </div>
+                        </div>
+
+                        <!-- Floating Stats (Right side) -->
+                        <div class="floating-stats">
+                            <div class="stat-item" title="Sent"><i class="fas fa-paper-plane"></i><span>${Math.floor(Math.random()*50)}</span></div>
+                            <div class="stat-item" title="Opened"><i class="fas fa-envelope-open"></i><span>${Math.floor(Math.random()*20)}</span></div>
+                            <div class="stat-item" title="Clicks"><i class="fas fa-mouse-pointer"></i><span>${Math.floor(Math.random()*10)}</span></div>
+                            <div class="stat-item" title="Users"><i class="fas fa-users"></i><span>0</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Content Area -->
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <div>
+                            <p class="font-bold text-sm text-gray-900 line-clamp-2 mb-3">${reel.title || 'No Title'}</p>
+                            <div class="flex items-start gap-2 text-xs text-gray-500 mb-4">
+                                <i class="far fa-calendar-alt mt-0.5"></i>
+                                <div>
+                                    <p>${dateStr}</p>
+                                    <p class="text-gray-400">Recently</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Button -->
+                        ${isLinked 
+                            ? `<a href="/automation/link-post/${reel.id}/?workflow=${workflowId}" class="w-full btn-edit-post py-2.5 rounded-lg text-center flex justify-center items-center gap-2"><i class="fas fa-edit"></i> Edit</a>`
+                            : `<a href="/automation/link-post/${reel.id}/" class="w-full btn-link-post py-2.5 rounded-lg text-center flex justify-center items-center gap-2"><i class="fas fa-link"></i> Link</a>`
+                        }
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function syncLatestPosts() {
+        alert("Syncing latest posts... (Mock action)");
+        loadReels();
+    }
+
+    function setFilter(type) {
+        if(type === 'all') renderReels(allReels);
+        if(type === 'linked') renderReels(allReels.filter(r => linkedWorkflowMap[r.id]));
+        if(type === 'unlinked') renderReels(allReels.filter(r => !linkedWorkflowMap[r.id]));
+    }
+    
+    function applyRadioFilter() {
+        const val = document.querySelector('input[name="filterStatus"]:checked').value;
+        setFilter(val);
+    }
+
+    document.addEventListener('DOMContentLoaded', loadAccounts);
+</script>
+{% endblock %}

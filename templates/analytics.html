@@ -1,0 +1,101 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Analytics — DMResponder{% endblock %}
+
+{% block content %}
+<div class="mb-10">
+    <h1 class="text-3xl font-bold tracking-tight text-gray-900">Analytics</h1>
+    <p class="mt-1 text-gray-500">Track your automation performance and conversion metrics.</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    <div class="card">
+        <div class="flex items-center justify-between mb-2">
+            <span class="stat-label">Total Comments</span>
+            <div class="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
+                <i class="fas fa-comments text-xs"></i>
+            </div>
+        </div>
+        <div class="stat-value">1,248</div>
+        <div class="mt-2 flex items-center text-xs font-medium text-green-600">
+            <i class="fas fa-arrow-up mr-1"></i> 12.4% vs last 30d
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="flex items-center justify-between mb-2">
+            <span class="stat-label">Automations Triggered</span>
+            <div class="w-8 h-8 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center">
+                <i class="fas fa-bolt text-xs"></i>
+            </div>
+        </div>
+        <div class="stat-value">856</div>
+        <div class="mt-2 flex items-center text-xs font-medium text-green-600">
+            <i class="fas fa-arrow-up mr-1"></i> 8.2% vs last 30d
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="flex items-center justify-between mb-2">
+            <span class="stat-label">Leads Captured</span>
+            <div class="w-8 h-8 bg-green-50 text-green-600 rounded-lg flex items-center justify-center">
+                <i class="fas fa-user-plus text-xs"></i>
+            </div>
+        </div>
+        <div class="stat-value">342</div>
+        <div class="mt-2 flex items-center text-xs font-medium text-green-600">
+            <i class="fas fa-arrow-up mr-1"></i> 15.7% vs last 30d
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="flex items-center justify-between mb-2">
+            <span class="stat-label">Conversion Rate</span>
+            <div class="w-8 h-8 bg-orange-50 text-orange-600 rounded-lg flex items-center justify-center">
+                <i class="fas fa-chart-line text-xs"></i>
+            </div>
+        </div>
+        <div class="stat-value">27.4%</div>
+        <div class="mt-2 flex items-center text-xs font-medium text-green-600">
+            <i class="fas fa-arrow-up mr-1"></i> 3.1% vs last 30d
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="card">
+        <h3 class="font-bold text-gray-900 mb-6">Daily Activity</h3>
+        <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400">
+            <p class="text-sm">Chart visualization coming soon</p>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h3 class="font-bold text-gray-900 mb-6">Top Performing Automations</h3>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between p-3 rounded-lg border border-gray-100">
+                <div>
+                    <p class="text-sm font-bold text-gray-900">Price Inquiry Flow</p>
+                    <p class="text-xs text-gray-500">342 triggers</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm font-bold text-green-600">94 leads</p>
+                    <p class="text-xs text-gray-500">27.5% conv.</p>
+                </div>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg border border-gray-100">
+                <div>
+                    <p class="text-sm font-bold text-gray-900">Guide Request Flow</p>
+                    <p class="text-xs text-gray-500">214 triggers</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm font-bold text-green-600">68 leads</p>
+                    <p class="text-xs text-gray-500">31.8% conv.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
