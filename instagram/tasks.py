@@ -1,6 +1,7 @@
 import logging
 from celery import shared_task
 from django.db.models import Q
+from instagrapi.exceptions import LoginRequired
 from .models import InstagramAccount
 from .comment_listener import CommentListener
 from .exceptions import InstagramRateLimitException, InstagramException
@@ -45,6 +46,11 @@ def poll_single_account_comments(self, account_id):
         listener = CommentListener(account)
         new_comments = listener.poll_account()
         return f"Successfully polled {account.username}. Found {new_comments} new comments."
+    except LoginRequired as exc:
+        logger.warning(f"Session expired (LoginRequired) for {account.username}. Marking status as disconnected.")
+        account.status = 'disconnected'
+        account.save()
+        return f"Session expired for {account.username}."
     except InstagramRateLimitException as exc:
         # Rate limits are common, retry with exponential backoff
         countdown = (BACKOFF_MULTIPLIER ** self.request.retries) * 60
@@ -56,6 +62,12 @@ def poll_single_account_comments(self, account_id):
         logger.warning(f"Instagram error for {account.username}. Retrying in {countdown}s. Error: {exc}")
         raise self.retry(exc=exc, countdown=countdown)
     except Exception as exc:
+        # Check if the error itself implies login is required
+        if isinstance(exc, Exception) and "login_required" in str(exc).lower():
+            logger.warning(f"Session expired (login required exception) for {account.username}. Marking status as disconnected.")
+            account.status = 'disconnected'
+            account.save()
+            return f"Session expired for {account.username}."
         # Unexpected error, log and fail (do not retry continuously)
         logger.error(f"Unexpected error polling comments for {account.username}: {exc}", exc_info=True)
         return f"Failed: {str(exc)}"
@@ -101,6 +113,11 @@ def poll_single_account_dms(self, account_id):
         listener = DMListener(account)
         new_messages = listener.poll_inbox()
         return f"Successfully polled DMs for {account.username}. Found {new_messages} new messages."
+    except LoginRequired as exc:
+        logger.warning(f"Session expired (LoginRequired) for {account.username}. Marking status as disconnected.")
+        account.status = 'disconnected'
+        account.save()
+        return f"Session expired for {account.username}."
     except InstagramRateLimitException as exc:
         countdown = (BACKOFF_MULTIPLIER ** self.request.retries) * 60
         logger.warning(f"Rate limited for {account.username} DMs. Retrying in {countdown}s. Error: {exc}")
@@ -110,6 +127,11 @@ def poll_single_account_dms(self, account_id):
         logger.warning(f"Instagram DM error for {account.username}. Retrying in {countdown}s. Error: {exc}")
         raise self.retry(exc=exc, countdown=countdown)
     except Exception as exc:
+        if isinstance(exc, Exception) and "login_required" in str(exc).lower():
+            logger.warning(f"Session expired (login required exception) for {account.username}. Marking status as disconnected.")
+            account.status = 'disconnected'
+            account.save()
+            return f"Session expired for {account.username}."
         logger.error(f"Unexpected error polling DMs for {account.username}: {exc}", exc_info=True)
         return f"Failed: {str(exc)}"
 

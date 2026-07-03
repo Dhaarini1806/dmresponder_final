@@ -3,7 +3,10 @@ from django.utils import timezone
 from datetime import timedelta
 from .models import InstagramAccount, InstagramReel, CommentLog, DMLog, InstagramSession
 from .session_manager import SessionManager
-from .exceptions import InstagramException, InstagramRateLimitException, InstagramChallengeException
+from .exceptions import (
+    InstagramException, InstagramRateLimitException, InstagramChallengeException,
+    InstagramTwoFactorRequiredException
+)
 import logging
 
 logger = logging.getLogger(__name__)
@@ -41,16 +44,34 @@ class InstagramService:
         )
 
         if created:
-            # Seed demo reels
-            for reel_data in DEMO_REELS:
+            # Seed demo reels with user-scoped IDs to avoid unique constraint violations
+            demo_reels = [
+                {"reel_id": f"demo_{user.pk}_reel_001", "title": "Product Launch Reel"},
+                {"reel_id": f"demo_{user.pk}_reel_002", "title": "Tutorial Highlights"},
+                {"reel_id": f"demo_{user.pk}_reel_003", "title": "Behind the Scenes"},
+            ]
+            for reel_data in demo_reels:
                 InstagramReel.objects.get_or_create(
-                    account=account,
                     reel_id=reel_data["reel_id"],
-                    defaults={"title": reel_data["title"]},
+                    defaults={"account": account, "title": reel_data["title"]},
                 )
             logger.info(f"Created demo account for user {user.username} (account_id={demo_account_id})")
         else:
             logger.info(f"Returned existing demo account for user {user.username}")
+
+        # Always ensure demo reels exist (handles existing accounts with missing reels)
+        if not account.reels.exists():
+            demo_reels = [
+                {"reel_id": f"demo_{user.pk}_reel_001", "title": "Product Launch Reel"},
+                {"reel_id": f"demo_{user.pk}_reel_002", "title": "Tutorial Highlights"},
+                {"reel_id": f"demo_{user.pk}_reel_003", "title": "Behind the Scenes"},
+            ]
+            for reel_data in demo_reels:
+                InstagramReel.objects.get_or_create(
+                    reel_id=reel_data["reel_id"],
+                    defaults={"account": account, "title": reel_data["title"]},
+                )
+            logger.info(f"Seeded demo reels for user {user.username}")
 
         return account
 
@@ -64,6 +85,11 @@ class InstagramService:
             account.last_sync = timezone.now()
             account.save()
             return True
+        except InstagramTwoFactorRequiredException as e:
+            account.status = 'pending'
+            account.save()
+            logger.warning(f"Instagram 2FA required for {account.username}")
+            raise
         except InstagramChallengeException as e:
             account.status = 'pending'
             account.save()
@@ -98,13 +124,19 @@ class InstagramService:
     def sync_reels(account: InstagramAccount):
         """Fetches reels from Instagram using instagrapi and saves them locally."""
         if account.is_demo:
-            # Seed demo reels if not done already
-            for reel_data in DEMO_REELS:
-                InstagramReel.objects.get_or_create(
-                    account=account,
-                    reel_id=reel_data["reel_id"],
-                    defaults={"title": reel_data["title"]}
-                )
+            # Seed demo reels with user-scoped IDs if not done already
+            if not account.reels.exists():
+                user = account.user
+                demo_reels = [
+                    {"reel_id": f"demo_{user.pk}_reel_001", "title": "Product Launch Reel"},
+                    {"reel_id": f"demo_{user.pk}_reel_002", "title": "Tutorial Highlights"},
+                    {"reel_id": f"demo_{user.pk}_reel_003", "title": "Behind the Scenes"},
+                ]
+                for reel_data in demo_reels:
+                    InstagramReel.objects.get_or_create(
+                        reel_id=reel_data["reel_id"],
+                        defaults={"account": account, "title": reel_data["title"]}
+                    )
             return
 
         client = InstagramService.get_instagram_client(account)

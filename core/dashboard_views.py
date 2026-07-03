@@ -55,3 +55,13 @@ def settings(request):
 def content_calendar(request):
     """Content calendar and scheduling"""
     return render(request, 'content_calendar.html')
+
+@login_required
+def stories(request):
+    """Stories feature page"""
+    return render(request, 'stories.html')
+
+@login_required
+def default_settings(request):
+    """Default Settings page with Media Template builder"""
+    return render(request, 'default_settings.html')

@@ -51,10 +51,31 @@ def execute_action_task(self, action_execution_id):
         return result
 
     except Exception as exc:
+        # Check if error indicates session/authentication failure (like BadPassword, LoginRequired, or custom 'Session expired')
+        is_auth_failure = False
+        exc_str = str(exc).lower()
+        if isinstance(exc, (BadPassword, LoginRequired)) or "session expired" in exc_str or "login_required" in exc_str or "bad_password" in exc_str:
+            is_auth_failure = True
+            
         logger.warning(
             f"Action {action_exec.action_type} ({action_execution_id}) failed "
             f"(attempt {action_exec.attempt_count}): {exc}"
         )
+        
+        if is_auth_failure:
+            # Mark the account as disconnected and fail the action permanently (no retries)
+            account = action_exec.instagram_account
+            if account:
+                logger.warning(f"Session expired or auth failure for {account.username} during action. Disconnecting account.")
+                account.status = 'disconnected'
+                account.save()
+            
+            action_exec.status = ActionExecution.Status.DEAD_LETTER
+            action_exec.error_message = f"Authentication failure: {exc}"
+            action_exec.completed_at = timezone.now()
+            action_exec.save(update_fields=["status", "error_message", "completed_at"])
+            return
+            
         if action_exec.attempt_count >= MAX_ATTEMPTS:
             action_exec.status = ActionExecution.Status.DEAD_LETTER
             action_exec.error_message = str(exc)

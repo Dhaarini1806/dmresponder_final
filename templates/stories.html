@@ -1,0 +1,80 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Stories - DM Responder{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Breadcrumb & Title -->
+    <div>
+        <nav class="flex text-[11px] font-medium text-gray-500 mb-2">
+            <ol class="flex items-center space-x-1">
+                <li><a href="{% url 'dashboard' %}" class="hover:text-gray-900">Home</a></li>
+                <li><span class="mx-1">></span></li>
+                <li class="text-gray-900">Stories</li>
+            </ol>
+        </nav>
+        <h1 class="text-2xl font-bold tracking-tight text-gray-900">Stories</h1>
+    </div>
+
+    <!-- Info Bar -->
+    <div class="bg-white border border-gray-200 rounded-lg p-4 flex flex-col sm:flex-row items-center justify-between shadow-sm">
+        <p class="text-xs text-gray-500 font-semibold mb-4 sm:mb-0">Quickly sync your latest Instagram stories if they're not updated!</p>
+        <button class="px-4 py-2 bg-black text-white text-[11px] font-bold rounded flex items-center hover:bg-gray-800 transition">
+            <i class="fas fa-sync-alt mr-2"></i> Fetch Latest Story
+        </button>
+    </div>
+
+    <!-- Filters & Legend -->
+    <div class="flex flex-col sm:flex-row items-center justify-between pb-4 border-b border-gray-100 mt-8 mb-16">
+        <div class="flex items-center space-x-4 mb-4 sm:mb-0">
+            <div class="flex items-center text-xs text-gray-500 font-medium">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#e3b98c] mr-1.5"></span> Unlink
+            </div>
+            <div class="flex items-center text-xs text-gray-500 font-medium">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#933fe2] mr-1.5"></span> Linked
+            </div>
+        </div>
+        
+        <div class="flex bg-white border border-gray-200 rounded p-1 shadow-sm">
+            <button class="px-5 py-1.5 text-[11px] font-bold bg-black text-white rounded">All</button>
+            <button class="px-5 py-1.5 text-[11px] font-bold text-gray-500 hover:text-gray-900 rounded">Link</button>
+            <button class="px-5 py-1.5 text-[11px] font-bold text-gray-500 hover:text-gray-900 rounded">Unlink</button>
+            <button class="px-5 py-1.5 text-[11px] font-bold text-gray-500 hover:text-gray-900 rounded">Expired</button>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="flex flex-col items-center justify-center mt-20 pt-10">
+        <!-- SVG Illustration matching screenshot -->
+        <div class="relative w-48 h-48">
+            <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Phone Body -->
+                <rect x="70" y="40" width="60" height="110" rx="6" stroke="#333" stroke-width="2" fill="white"/>
+                <!-- Avatar placeholder -->
+                <circle cx="80" cy="50" r="3" fill="#e5e7eb"/>
+                <line x1="88" y1="50" x2="110" y2="50" stroke="#e5e7eb" stroke-width="3" stroke-linecap="round"/>
+                
+                <!-- Image Placeholder Area -->
+                <rect x="75" y="65" width="50" height="40" fill="#e5e7eb" stroke="#d1d5db" stroke-width="1"/>
+                <path d="M75 105 L90 85 L100 95 L115 75 L125 85 L125 105 Z" fill="#d1d5db"/>
+                
+                <!-- Bottom Action bar -->
+                <rect x="75" y="135" width="40" height="8" rx="4" fill="none" stroke="#666" stroke-width="1"/>
+                <!-- Heart -->
+                <path d="M120 138 C120 135, 125 135, 122 142 L120 144 L118 142 C115 135, 120 135, 120 138" fill="none" stroke="#666" stroke-width="1"/>
+
+                <!-- Magnifying Glass with Red X -->
+                <g transform="translate(10, 10)">
+                    <!-- Handle -->
+                    <line x1="125" y1="125" x2="140" y2="140" stroke="black" stroke-width="8" stroke-linecap="round"/>
+                    <!-- Glass frame -->
+                    <circle cx="115" cy="115" r="14" fill="white" stroke="#d1d5db" stroke-width="3"/>
+                    <!-- Red X -->
+                    <line x1="108" y1="108" x2="122" y2="122" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="122" y1="108" x2="108" y2="122" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/>
+                </g>
+            </svg>
+        </div>
+    </div>
+</div>
+{% endblock %}

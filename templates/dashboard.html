@@ -1,209 +1,236 @@
 {% extends "dashboard_base.html" %}
 
-{% block title %}Dashboard — DMResponder{% endblock %}
+{% block title %}Dashboard - DM Responder{% endblock %}
 
 {% block content %}
-<div class="mb-10">
-    <h1 class="text-3xl font-bold tracking-tight text-gray-900">Overview</h1>
-    <p class="mt-1 text-gray-500">Welcome back! Here's what's happening with your Instagram automations.</p>
-</div>
-
-<!-- KPI Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
-    <div class="card p-6">
-        <div class="flex items-center justify-between mb-4">
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Conversations</span>
-            <i class="fas fa-comments text-indigo-500 opacity-50"></i>
-        </div>
-        <div class="text-2xl font-bold text-gray-900" id="convCount">0</div>
-        <div class="mt-2 flex items-center text-xs font-medium text-green-600" id="convTrend">
-            <i class="fas fa-arrow-up mr-1"></i> 12.4%
-        </div>
-    </div>
-    
-    <div class="card p-6">
-        <div class="flex items-center justify-between mb-4">
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">New Leads</span>
-            <i class="fas fa-user-plus text-indigo-500 opacity-50"></i>
-        </div>
-        <div class="text-2xl font-bold text-gray-900" id="leadCount">842</div>
-        <div class="mt-2 flex items-center text-xs font-medium text-green-600">
-            <i class="fas fa-arrow-up mr-1"></i> 5.2%
-        </div>
-    </div>
-    
-    <div class="card p-6">
-        <div class="flex items-center justify-between mb-4">
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">DM Replies</span>
-            <i class="fas fa-paper-plane text-indigo-500 opacity-50"></i>
-        </div>
-        <div class="text-2xl font-bold text-gray-900" id="dmRepliesCount">0</div>
-        <div class="mt-2 flex items-center text-xs font-medium text-green-600" id="dmRepliesTrend">
-            <i class="fas fa-arrow-up mr-1"></i> 8.7%
-        </div>
-    </div>
-    
-    <div class="card p-6">
-        <div class="flex items-center justify-between mb-4">
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Conv. Rate</span>
-            <i class="fas fa-chart-line text-indigo-500 opacity-50"></i>
-        </div>
-        <div class="text-2xl font-bold text-gray-900" id="convRate">0%</div>
-        <div class="mt-2 flex items-center text-xs font-medium text-green-600" id="convRateTrend">
-            <i class="fas fa-arrow-up mr-1"></i> 3.1%
-        </div>
-    </div>
-
-    <div class="card p-6">
-        <div class="flex items-center justify-between mb-4">
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Revenue</span>
-            <i class="fas fa-dollar-sign text-indigo-500 opacity-50"></i>
-        </div>
-        <div class="text-2xl font-bold text-gray-900" id="revenueCount">$0</div>
-        <div class="mt-2 flex items-center text-xs font-medium text-green-600" id="revenueTrend">
-            <i class="fas fa-arrow-up mr-1"></i> 22.8%
-        </div>
-    </div>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-    <!-- Main Chart -->
-    <div class="lg:col-span-2 card p-8">
-        <div class="flex items-center justify-between mb-8">
-            <div>
-                <h3 class="font-bold text-gray-900">Lead growth</h3>
-                <p class="text-xs text-gray-500 mt-1">Last 30 days, all sources</p>
+<div class="space-y-6">
+    <!-- Top Row -->
+    <div class="flex flex-col lg:flex-row gap-6">
+        <!-- Last 30 Days Chart -->
+        <div class="w-full lg:w-2/3 bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex flex-col">
+            <h2 class="text-[17px] font-bold text-gray-900 mb-5">Last 30 Days</h2>
+            <!-- Legend -->
+            <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500 mb-8 font-medium">
+                <div class="flex items-center gap-1.5"><div class="w-3.5 h-3.5 rounded-sm bg-[#5c45e6]"></div>DM Sent</div>
+                <div class="flex items-center gap-1.5"><div class="w-3.5 h-3.5 rounded-sm bg-[#00d0ff]"></div>Posts/Reels Linked</div>
+                <div class="flex items-center gap-1.5"><div class="w-3.5 h-3.5 rounded-sm bg-[#95e6aa]"></div>Story Linked</div>
+                <div class="flex items-center gap-1.5"><div class="w-3.5 h-3.5 rounded-sm bg-[#eab308]"></div>Engagement Starter</div>
+                <div class="flex items-center gap-1.5"><div class="w-3.5 h-3.5 rounded-sm bg-[#fb7185]"></div>Follow-Gated DM</div>
             </div>
-            <div class="flex bg-gray-50 p-1 rounded-lg">
-                <button class="px-3 py-1 text-[10px] font-bold text-gray-500 hover:text-gray-900">7D</button>
-                <button class="px-3 py-1 text-[10px] font-bold text-gray-900 bg-white rounded shadow-sm">30D</button>
-                <button class="px-3 py-1 text-[10px] font-bold text-gray-500 hover:text-gray-900">90D</button>
+            <!-- Chart Area -->
+            <div class="flex-1 relative min-h-[300px] border-b border-l border-gray-100 flex items-end ml-4">
+                <!-- Grid Lines (horizontal) -->
+                <div class="absolute inset-0 flex flex-col justify-between z-0 pb-8 pointer-events-none">
+                    <div class="border-t border-gray-100 border-dashed w-full flex items-center relative"><span class="absolute -left-5 text-[10px] text-gray-400">4</span></div>
+                    <div class="border-t border-gray-100 border-dashed w-full flex items-center relative"><span class="absolute -left-5 text-[10px] text-gray-400">3</span></div>
+                    <div class="border-t border-gray-100 border-dashed w-full flex items-center relative"><span class="absolute -left-5 text-[10px] text-gray-400">2</span></div>
+                    <div class="border-t border-gray-100 border-dashed w-full flex items-center relative"><span class="absolute -left-5 text-[10px] text-gray-400">1</span></div>
+                    <div class="w-full flex items-center relative"><span class="absolute -left-5 text-[10px] text-gray-400">0</span></div>
+                </div>
+                
+                <!-- SVG Line Chart (DM Sent) -->
+                <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" class="absolute inset-0 z-10 overflow-visible pb-8 pt-2">
+                    <defs>
+                        <clipPath id="revealLine">
+                            <rect x="0" y="-10" width="0" height="120">
+                                <animate attributeName="width" from="0" to="110" dur="2s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.4 0 0.2 1" />
+                            </rect>
+                        </clipPath>
+                    </defs>
+                    <g clip-path="url(#revealLine)">
+                        <!-- Flat line that suddenly spikes up at the end, exactly like the image -->
+                        <path d="M0,100 L95,100 C97,100 98,70 100,50" fill="none" stroke="#5c45e6" stroke-width="0.3" stroke-linecap="round"></path>
+                    </g>
+                </svg>
+
+                <!-- X Axis Labels -->
+                <div class="absolute bottom-0 left-0 right-0 h-8 flex justify-between items-center text-[9px] text-gray-400 font-medium px-2 transform translate-y-full">
+                    <span>08-04</span><span>08-06</span><span>08-08</span><span>08-10</span><span>08-12</span><span>08-14</span><span>08-16</span><span>08-18</span><span>08-20</span><span>08-22</span><span>08-24</span><span>08-26</span><span>08-28</span><span>08-30</span><span>07-02</span>
+                </div>
             </div>
         </div>
-        <div class="h-64 w-full relative mt-4">
-            <svg width="100%" height="100%" viewBox="0 0 400 150" preserveAspectRatio="none" class="chart-svg overflow-visible">
-                <defs>
-                    <linearGradient id="purpleGradient" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stop-color="#933fe2" stop-opacity="0.3"></stop>
-                        <stop offset="100%" stop-color="#933fe2" stop-opacity="0"></stop>
-                    </linearGradient>
-                    
-                    <clipPath id="revealClip">
-                        <rect x="0" y="-10" width="0" height="170">
-                            <animate attributeName="width" from="0" to="410" dur="1.5s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.4 0 0.2 1" />
-                        </rect>
-                    </clipPath>
-                </defs>
-        
-                <!-- Grid Lines -->
-                <g stroke="#f3f4f6" stroke-width="1" stroke-dasharray="4,4">
-                    <line x1="0" y1="30" x2="400" y2="30" />
-                    <line x1="0" y1="70" x2="400" y2="70" />
-                    <line x1="0" y1="110" x2="400" y2="110" />
-                    <line x1="0" y1="150" x2="400" y2="150" />
-                </g>
 
-                <g clip-path="url(#revealClip)">
-                    <!-- Filled Area -->
-                    <path d="M0,150 L0,120 C50,110 80,130 130,90 C180,50 220,100 280,60 C330,20 370,30 400,10 L400,150 Z" fill="url(#purpleGradient)"></path>
-                    
-                    <!-- Line -->
-                    <path d="M0,120 C50,110 80,130 130,90 C180,50 220,100 280,60 C330,20 370,30 400,10" fill="none" stroke="#933fe2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
-                    
-                    <!-- Data Points -->
-                    <circle cx="130" cy="90" r="5" fill="white" stroke="#933fe2" stroke-width="3"></circle>
-                    <circle cx="280" cy="60" r="5" fill="white" stroke="#933fe2" stroke-width="3"></circle>
-                    <circle cx="400" cy="10" r="5" fill="white" stroke="#933fe2" stroke-width="3"></circle>
-                </g>
-            </svg>
+        <!-- Critical Alerts -->
+        <div class="w-full lg:w-1/3 bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex flex-col">
+            <h2 class="text-[17px] font-bold text-gray-900 mb-4">Critical Alerts</h2>
+            <div class="flex-1 flex flex-col items-center justify-center text-center py-10">
+                <!-- Cute Bell Icon matched from screenshot -->
+                <div class="relative w-28 h-28 mb-4">
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Top loop -->
+                        <circle cx="50" cy="15" r="5" stroke="#333" stroke-width="2.5" fill="none"/>
+                        <!-- Bell Body -->
+                        <path d="M25 55 C25 20, 75 20, 75 55 L80 65 L20 65 Z" stroke="#333" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+                        <path d="M42 65 C42 75, 58 75, 58 65" stroke="#333" stroke-width="2.5" fill="none"/>
+                        <!-- Face -->
+                        <circle cx="40" cy="45" r="2.5" fill="#333"/>
+                        <circle cx="60" cy="45" r="2.5" fill="#333"/>
+                        <path d="M45 53 Q50 58 55 53" stroke="#333" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                        <!-- Underline -->
+                        <line x1="20" y1="75" x2="80" y2="75" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <p class="text-[13px] font-semibold text-gray-500">No Critical Alerts</p>
+            </div>
         </div>
     </div>
-    
-    <!-- Top Automations -->
-    <div class="card p-8">
-        <h3 class="font-bold text-gray-900 mb-6">Top automations</h3>
-        <div class="space-y-6" id="topAutomations">
-            <!-- Dynamic Content -->
+
+    <!-- Bottom Row -->
+    <div class="flex flex-col lg:flex-row gap-6 pb-10">
+        <!-- Top Performing Posts -->
+        <div class="w-full lg:w-1/2 bg-white border border-gray-200 rounded-xl p-0 shadow-sm flex flex-col min-h-[400px]">
+            <div class="p-6 pb-4">
+                <h2 class="text-[17px] font-bold text-gray-900">Top Performing Posts/Reels</h2>
+            </div>
+            
+            <div class="w-full overflow-x-auto">
+                <table class="w-full text-left text-[10px]">
+                    <thead class="bg-gray-50 text-gray-500 font-bold uppercase border-y border-gray-100">
+                        <tr>
+                            <th class="px-6 py-3.5 whitespace-nowrap">SR NO</th>
+                            <th class="px-4 py-3.5 whitespace-nowrap">POST IMAGE</th>
+                            <th class="px-4 py-3.5 whitespace-nowrap">DM SENT</th>
+                            <th class="px-4 py-3.5 whitespace-nowrap">OPEN</th>
+                            <th class="px-4 py-3.5 whitespace-nowrap">CLICK</th>
+                            <th class="px-4 py-3.5 whitespace-nowrap">CTR</th>
+                            <th class="px-4 py-3.5 whitespace-nowrap">LINKED DATE</th>
+                            <th class="px-6 py-3.5 whitespace-nowrap text-right">ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Empty State goes here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Empty state -->
+            <div class="flex-1 flex flex-col items-center justify-center p-10 text-center">
+                <div class="w-24 h-24 mb-4 relative">
+                    <!-- Inbox/Box Icon -->
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-gray-200">
+                        <path d="M20 50 L20 80 C20 85, 25 90, 30 90 L70 90 C75 90, 80 85, 80 80 L80 50 Z" fill="#e5e7eb"/>
+                        <path d="M20 50 L40 50 L45 60 L55 60 L60 50 L80 50 L85 40 C85 35, 80 30, 75 30 L25 30 C20 30, 15 35, 15 40 Z" fill="#d1d5db"/>
+                        <rect x="35" y="15" width="30" height="30" fill="#f3f4f6" stroke="#d1d5db" stroke-width="2"/>
+                        <line x1="45" y1="25" x2="55" y2="25" stroke="#d1d5db" stroke-width="2"/>
+                        <line x1="40" y1="35" x2="60" y2="35" stroke="#d1d5db" stroke-width="2"/>
+                        
+                        <!-- Chat Bubble -->
+                        <path d="M70 20 C70 10, 85 10, 85 20 C85 25, 80 30, 75 30 L70 32 L72 27 C70 25, 70 22, 70 20 Z" fill="#d1d5db"/>
+                        <circle cx="75" cy="20" r="1" fill="white"/>
+                        <circle cx="78" cy="20" r="1" fill="white"/>
+                        <circle cx="81" cy="20" r="1" fill="white"/>
+                    </svg>
+                </div>
+                <p class="text-[13px] font-semibold text-gray-500">No Post Link Found</p>
+            </div>
+        </div>
+
+        <!-- Latest Unlinked Posts -->
+        <div class="w-full lg:w-1/2 bg-white border border-gray-200 rounded-xl p-0 shadow-sm flex flex-col min-h-[400px]">
+            <div class="p-6 pb-4">
+                <h2 class="text-[17px] font-bold text-gray-900">Latest Unlinked Posts/Reels</h2>
+            </div>
+            
+            <div class="w-full overflow-x-auto flex-1">
+                <table class="w-full text-left text-[11px]">
+                    <thead class="bg-gray-50 text-gray-500 font-bold uppercase border-y border-gray-100">
+                        <tr>
+                            <th class="px-6 py-3.5 w-16">SR NO</th>
+                            <th class="px-4 py-3.5">POST IMAGE</th>
+                            <th class="px-4 py-3.5">PUBLISH DATE</th>
+                            <th class="px-6 py-3.5 text-center">ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <!-- Row 1 -->
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-5 font-bold text-[#933fe2]">1</td>
+                            <td class="px-4 py-5">
+                                <div class="w-[50px] h-[50px] bg-gray-100 rounded-[10px] overflow-hidden relative shadow-sm">
+                                    <div class="absolute inset-0 flex items-center justify-center text-gray-400"><i class="fas fa-image text-xl"></i></div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-5 text-gray-700 font-semibold leading-tight">
+                                June 29, 2026<br><span class="text-gray-400 text-[10px] font-medium">06:06 PM</span>
+                            </td>
+                            <td class="px-6 py-5 text-center">
+                                <a href="#" class="inline-flex items-center gap-1.5 px-6 py-2 bg-[#e3b98c] hover:bg-[#dcb38f] text-black text-[11px] font-bold rounded shadow-sm transition">
+                                    <i class="fas fa-link"></i> Link
+                                </a>
+                            </td>
+                        </tr>
+                        <!-- Row 2 -->
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-5 font-bold text-[#933fe2]">2</td>
+                            <td class="px-4 py-5">
+                                <div class="w-[50px] h-[50px] bg-gray-100 rounded-[10px] overflow-hidden relative shadow-sm">
+                                    <div class="absolute inset-0 flex items-center justify-center text-gray-400"><i class="fas fa-image text-xl"></i></div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-5 text-gray-700 font-semibold leading-tight">
+                                June 25, 2026<br><span class="text-gray-400 text-[10px] font-medium">06:29 PM</span>
+                            </td>
+                            <td class="px-6 py-5 text-center">
+                                <a href="#" class="inline-flex items-center gap-1.5 px-6 py-2 bg-[#e3b98c] hover:bg-[#dcb38f] text-black text-[11px] font-bold rounded shadow-sm transition">
+                                    <i class="fas fa-link"></i> Link
+                                </a>
+                            </td>
+                        </tr>
+                        <!-- Row 3 -->
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-5 font-bold text-[#933fe2]">3</td>
+                            <td class="px-4 py-5">
+                                <div class="w-[50px] h-[50px] bg-gray-100 rounded-[10px] overflow-hidden relative shadow-sm">
+                                    <div class="absolute inset-0 flex items-center justify-center text-gray-400"><i class="fas fa-image text-xl"></i></div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-5 text-gray-700 font-semibold leading-tight">
+                                June 23, 2026<br><span class="text-gray-400 text-[10px] font-medium">07:32 PM</span>
+                            </td>
+                            <td class="px-6 py-5 text-center">
+                                <a href="#" class="inline-flex items-center gap-1.5 px-6 py-2 bg-[#e3b98c] hover:bg-[#dcb38f] text-black text-[11px] font-bold rounded shadow-sm transition">
+                                    <i class="fas fa-link"></i> Link
+                                </a>
+                            </td>
+                        </tr>
+                        <!-- Row 4 -->
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-5 font-bold text-[#933fe2]">4</td>
+                            <td class="px-4 py-5">
+                                <div class="w-[50px] h-[50px] bg-gray-100 rounded-[10px] overflow-hidden relative shadow-sm">
+                                    <div class="absolute inset-0 flex items-center justify-center text-gray-400"><i class="fas fa-image text-xl"></i></div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-5 text-gray-700 font-semibold leading-tight">
+                                June 18, 2026<br><span class="text-gray-400 text-[10px] font-medium">06:50 PM</span>
+                            </td>
+                            <td class="px-6 py-5 text-center">
+                                <a href="#" class="inline-flex items-center gap-1.5 px-6 py-2 bg-[#e3b98c] hover:bg-[#dcb38f] text-black text-[11px] font-bold rounded shadow-sm transition">
+                                    <i class="fas fa-link"></i> Link
+                                </a>
+                            </td>
+                        </tr>
+                        <!-- Row 5 -->
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-5 font-bold text-[#933fe2]">5</td>
+                            <td class="px-4 py-5">
+                                <div class="w-[50px] h-[50px] bg-gray-100 rounded-[10px] overflow-hidden relative shadow-sm">
+                                    <div class="absolute inset-0 flex items-center justify-center text-gray-400"><i class="fas fa-image text-xl"></i></div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-5 text-gray-700 font-semibold leading-tight">
+                                June 16, 2026<br><span class="text-gray-400 text-[10px] font-medium">06:31 PM</span>
+                            </td>
+                            <td class="px-6 py-5 text-center">
+                                <a href="#" class="inline-flex items-center gap-1.5 px-6 py-2 bg-[#e3b98c] hover:bg-[#dcb38f] text-black text-[11px] font-bold rounded shadow-sm transition">
+                                    <i class="fas fa-link"></i> Link
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
-
-<!-- Recent Activity -->
-<div class="card p-0 overflow-hidden">
-    <div class="px-8 py-4 border-b border-gray-100 flex items-center justify-between">
-        <h3 class="font-bold text-gray-900">Recent activity</h3>
-        <a href="{% url 'inbox' %}" class="text-xs font-bold text-[#933fe2] hover:underline">Open inbox →</a>
-    </div>
-    <div class="divide-y divide-gray-50" id="activityFeed">
-        <!-- Dynamic Content -->
-    </div>
-</div>
-
-{% block extra_js %}
-<script>
-    async function refreshDashboard() {
-        try {
-            const res = await fetch('/api/analytics/events/dashboard_summary/');
-            if (res.ok) {
-                const data = await res.json();
-                document.getElementById('convCount').textContent = data.conversations.toLocaleString();
-                document.getElementById('leadCount').textContent = data.leads.toLocaleString();
-                document.getElementById('dmRepliesCount').textContent = data.dm_replies.toLocaleString();
-                document.getElementById('convRate').textContent = data.conversion_rate + '%';
-                document.getElementById('revenueCount').textContent = '$' + data.revenue.toLocaleString();
-
-                // Render Top Automations
-                const topAutoContainer = document.getElementById('topAutomations');
-                topAutoContainer.innerHTML = '';
-                if (data.top_automations.length > 0) {
-                    data.top_automations.forEach(auto => {
-                        topAutoContainer.innerHTML += `
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-gray-100 text-[#933fe2] rounded-lg flex items-center justify-center text-xs">
-                                        <i class="fas fa-robot"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-bold text-gray-900">${auto.workflow__name}</p>
-                                        <p class="text-[10px] text-gray-500">${auto.workflow__trigger_type}</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-sm font-bold text-gray-900">${auto.count} executions</p>
-                                </div>
-                            </div>`;
-                    });
-                } else {
-                    topAutoContainer.innerHTML = '<p class="text-sm text-gray-500">No automations triggered yet.</p>';
-                }
-
-                // Render Recent Activity
-                const activityContainer = document.getElementById('activityFeed');
-                activityContainer.innerHTML = '';
-                if (data.recent_activity.length > 0) {
-                    data.recent_activity.forEach(act => {
-                        activityContainer.innerHTML += `
-                            <div class="px-8 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                                <div class="flex items-center space-x-4">
-                                    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-[#933fe2] font-bold text-xs">${act.initials}</div>
-                                    <div>
-                                        <p class="text-sm text-gray-900"><span class="font-bold">${act.name}</span> captured as new lead from ${act.source}</p>
-                                        <p class="text-xs text-gray-400 mt-1">${act.time}</p>
-                                    </div>
-                                </div>
-                            </div>`;
-                    });
-                } else {
-                    activityContainer.innerHTML = '<div class="px-8 py-4"><p class="text-sm text-gray-500">No recent activity.</p></div>';
-                }
-            }
-        } catch (e) {
-            console.error("Failed to fetch dashboard summary", e);
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', refreshDashboard);
-</script>
 {% endblock %}
-{% endblock %}
-

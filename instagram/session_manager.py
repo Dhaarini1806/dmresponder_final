@@ -15,7 +15,10 @@ from instagrapi.exceptions import (BadPassword, ChallengeRequired, TwoFactorRequ
                                    FeedbackRequired, PleaseWaitFewMinutes, LoginRequired)
 
 from .models import InstagramAccount, InstagramSession
-from .exceptions import InstagramException, InstagramRateLimitException, InstagramChallengeException
+from .exceptions import (
+    InstagramException, InstagramRateLimitException, InstagramChallengeException,
+    InstagramTwoFactorRequiredException
+)
 
 logger = logging.getLogger(__name__)
 
@@ -53,13 +56,15 @@ class SessionManager:
     def login(self, username, password, verification_code=None) -> bool:
         """Logs into Instagram and saves the session."""
         try:
-            settings = self.cl.get_settings()
-            if settings.get('authorization_data'): # Check if already logged in with loaded session
-                logger.info(f"Already logged in as {self.account.username}.")
-                self.account.status = 'connected'
-                self.account.last_sync = timezone.now()
-                self.account.save()
-                return True
+            # Only check for cached session if username/password are not explicitly provided
+            if not username and not password:
+                settings = self.cl.get_settings()
+                if settings.get('authorization_data'): # Check if already logged in with loaded session
+                    logger.info(f"Already logged in as {self.account.username} (using loaded session).")
+                    self.account.status = 'connected'
+                    self.account.last_sync = timezone.now()
+                    self.account.save()
+                    return True
 
             self.cl.login(username, password, verification_code=verification_code)
             self._save_session()
@@ -77,13 +82,16 @@ class SessionManager:
             logger.warning(f"Challenge required for {self.account.username}. {e}")
             self.account.status = 'pending'
             self.account.save()
-            # You might need to implement a mechanism to ask the user for challenge resolution
-            raise InstagramChallengeException(f"Instagram challenge required. Please log into the Instagram app on your phone to approve the login attempt, then try again.")
-        except TwoFactorRequired:
+            raise InstagramChallengeException(
+                message="Instagram challenge required. Please log into the Instagram app on your phone to approve the login attempt, then try again.",
+                challenge_url=getattr(e, 'challenge_url', '')
+            )
+        except TwoFactorRequired as e:
             logger.warning(f"Two-factor authentication required for {self.account.username}.")
             self.account.status = 'pending'
             self.account.save()
-            raise InstagramException("Two-factor authentication required.")
+            two_factor_info = getattr(e, 'two_factor_info', {}) or {}
+            raise InstagramTwoFactorRequiredException("Two-factor authentication required.", two_factor_info=two_factor_info)
         except FeedbackRequired as e:
             logger.warning(f"Feedback required for {self.account.username}: {e}")
             self.account.status = 'disconnected'

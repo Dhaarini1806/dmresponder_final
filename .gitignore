@@ -1,0 +1,51 @@
+# Django / Python
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables (Sensitive Credentials)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Databases and schedules
+db.sqlite3
+db.sqlite3-journal
+celerybeat-schedule
+celerybeat-schedule-shm
+celerybeat-schedule-wal
+celerybeat-schedule.db
+
+# Static & Media files
+staticfiles/
+media/
+media-root/
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor/IDE configs
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

@@ -1156,3 +1156,104 @@ class InstagramServiceTest(TestCase):
             InstagramService.get_instagram_client(account)
             MockSM.assert_called_once_with(account)
             mock_sm.ensure_session_active.assert_called_once()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 15. Instagram Linking and Resilience Tests
+# ─────────────────────────────────────────────────────────────────────────────
+
+from instagram.exceptions import InstagramTwoFactorRequiredException
+
+class InstagramLinkingAndResilienceTest(TestCase):
+
+    def setUp(self):
+        self.user = make_user("resilient_user")
+        self.client = jwt_client(self.user)
+        self.other_user = make_user("other_resilient_user")
+
+    @patch("instagram.services.SessionManager")
+    def test_connect_real_two_factor_required(self, MockSM):
+        """ViewSet returns 202 status and two_factor_required status when 2FA is required."""
+        mock_sm = MockSM.return_value
+        mock_sm.login.side_effect = InstagramTwoFactorRequiredException("2FA required", two_factor_info={"obfuscated_phone": "123"})
+        
+        response = self.client.post("/api/instagram/accounts/connect_real/", {
+            "username": "test_2fa_user",
+            "password": "secretpassword"
+        }, format="json")
+        
+        self.assertEqual(response.status_code, 202)
+        data = response.json()
+        self.assertEqual(data["status"], "two_factor_required")
+        self.assertEqual(data["two_factor_info"], {"obfuscated_phone": "123"})
+
+    @patch("instagram.services.SessionManager")
+    def test_connect_real_challenge_required(self, MockSM):
+        """ViewSet returns 202 status and challenge_required status when a login challenge occurs."""
+        mock_sm = MockSM.return_value
+        mock_sm.login.side_effect = InstagramChallengeException("Challenge needed", challenge_url="https://ig.com/ch")
+        
+        response = self.client.post("/api/instagram/accounts/connect_real/", {
+            "username": "test_challenge_user",
+            "password": "secretpassword"
+        }, format="json")
+        
+        self.assertEqual(response.status_code, 202)
+        data = response.json()
+        self.assertEqual(data["status"], "challenge_required")
+        self.assertEqual(data["challenge_url"], "https://ig.com/ch")
+
+    def test_connect_real_prevent_cross_user_takeover(self):
+        """ViewSet blocks user A from connecting user B's account."""
+        # Create user B's account
+        make_account(self.other_user, username="victim_user", account_id="ig_victim_user")
+        
+        # User A tries to link victim_user
+        response = self.client.post("/api/instagram/accounts/connect_real/", {
+            "username": "victim_user",
+            "password": "somepassword"
+        }, format="json")
+        
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("already connected by another user", response.json()["error"])
+
+    @patch("instagram.tasks.CommentListener")
+    def test_poll_task_disconnects_on_login_required(self, MockListener):
+        """Comment poll Celery task marks account as disconnected if LoginRequired occurs."""
+        account = make_account(self.user, username="test_task_user", account_id="ig_test_task_user", status="connected")
+        
+        from instagrapi.exceptions import LoginRequired
+        mock_list = MockListener.return_value
+        mock_list.poll_account.side_effect = LoginRequired("session expired")
+        
+        from instagram.tasks import poll_single_account_comments
+        poll_single_account_comments(account.id)
+        
+        account.refresh_from_db()
+        self.assertEqual(account.status, "disconnected")
+
+    @patch("instagram.action_tasks._dispatch_action")
+    def test_action_task_disconnects_on_login_required(self, mock_dispatch):
+        """Outbound action task disconnects account and marks action as DEAD_LETTER on auth error."""
+        account = make_account(self.user, username="test_action_user", account_id="ig_test_action_user", status="connected")
+        
+        from instagram.action_models import ActionExecution
+        action = ActionExecution.objects.create(
+            instagram_account=account,
+            action_type="SEND_DM",
+            request_payload={"recipient_id": "123", "text": "hello"},
+            status=ActionExecution.Status.PENDING
+        )
+        
+        from instagrapi.exceptions import LoginRequired
+        mock_dispatch.side_effect = LoginRequired("auth failure")
+        
+        from instagram.action_tasks import execute_action_task
+        execute_action_task(action.execution_id)
+        
+        account.refresh_from_db()
+        action.refresh_from_db()
+        
+        self.assertEqual(account.status, "disconnected")
+        self.assertEqual(action.status, ActionExecution.Status.DEAD_LETTER)
+        self.assertIn("Authentication failure", action.error_message)

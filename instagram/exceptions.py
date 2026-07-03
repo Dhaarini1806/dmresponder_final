@@ -34,3 +34,12 @@ class InstagramChallengeException(InstagramException):
     def __init__(self, message: str = "", challenge_url: str = ""):
         super().__init__(message)
         self.challenge_url = challenge_url
+
+
+class InstagramTwoFactorRequiredException(InstagramException):
+    """Raised when Instagram requires two-factor authentication."""
+
+    def __init__(self, message: str = "", two_factor_info: dict = None):
+        super().__init__(message)
+        self.two_factor_info = two_factor_info or {}
+

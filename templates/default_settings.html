@@ -1,0 +1,255 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Default Settings - DM Responder{% endblock %}
+
+{% block content %}
+<div class="space-y-6 pb-20">
+    <!-- Breadcrumb & Title -->
+    <div>
+        <nav class="flex text-[11px] font-medium text-gray-500 mb-2">
+            <ol class="flex items-center space-x-1">
+                <li><a href="{% url 'dashboard' %}" class="hover:text-gray-900">Home</a></li>
+                <li><span class="mx-1">></span></li>
+                <li class="text-gray-900">Default Settings</li>
+            </ol>
+        </nav>
+        <h1 class="text-2xl font-bold tracking-tight text-gray-900">Default Settings</h1>
+    </div>
+
+    <!-- Main Layout: 2 Columns -->
+    <div class="flex flex-col xl:flex-row gap-8">
+        
+        <!-- Left Column: Builder -->
+        <div class="w-full xl:w-2/3 space-y-4">
+            
+            <!-- Accordion: Trigger Type -->
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition shadow-sm">
+                <div>
+                    <h3 class="text-sm font-bold text-gray-900">Choose Trigger Type</h3>
+                    <p class="text-[11px] text-gray-500 mt-0.5">Choose how to activate this feature: you can manually select the trigger type or all comments option based on conditions.</p>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+
+            <!-- Accordion: Media Template (Expanded) -->
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                    <h3 class="text-sm font-bold text-gray-900">Message - Media Template</h3>
+                    <i class="fas fa-chevron-down text-gray-400"></i>
+                </div>
+                
+                <div class="p-5">
+                    <!-- Tabs -->
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <button class="px-4 py-2 border-2 border-black rounded-lg text-xs font-bold flex items-center bg-white">
+                            Media Template <i class="fas fa-check-circle ml-2 text-black text-[14px]"></i>
+                        </button>
+                        <button class="px-4 py-2 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 bg-white hover:bg-gray-50">Text Message</button>
+                        <button class="px-4 py-2 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 bg-white hover:bg-gray-50">Quick Replies</button>
+                        <button class="px-4 py-2 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 bg-white hover:bg-gray-50">Media Attachment</button>
+                        <button class="px-4 py-2 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 bg-white hover:bg-gray-50">Button Template</button>
+                        <button class="px-4 py-2 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 bg-white hover:bg-gray-50">Product Template</button>
+                    </div>
+
+                    <!-- Media Templates Carousel Area -->
+                    <div class="border border-gray-200 rounded-xl p-5 bg-[#fafafa] mb-6">
+                        <h4 class="text-sm font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-images mr-2 text-gray-400"></i> Media Templates (1/10)
+                        </h4>
+                        <p class="text-[11px] text-gray-500 mt-1 mb-4">Create multiple templates that users can swipe through</p>
+                        
+                        <div class="flex items-stretch gap-4 overflow-x-auto pb-2">
+                            <!-- Add Template Card -->
+                            <div class="flex-none w-48 h-56 bg-white border border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-black transition group shadow-sm">
+                                <i class="fas fa-plus text-xl text-gray-400 group-hover:text-black mb-2 transition"></i>
+                                <span class="text-xs font-bold text-gray-600 group-hover:text-black transition">Add Template</span>
+                            </div>
+                            
+                            <!-- Template 1 Card (Active) -->
+                            <div class="flex-none w-48 h-56 bg-white border-2 border-green-200 rounded-xl p-3 flex flex-col shadow-sm">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-[10px] font-bold text-gray-400"><i class="fas fa-grip-vertical mr-1"></i> 1</span>
+                                </div>
+                                <div class="flex-1 bg-gray-100 rounded-lg flex items-center justify-center text-[10px] text-gray-400 font-medium mb-3">
+                                    No Image
+                                </div>
+                                <p class="text-[10px] font-bold text-gray-900 mb-2">Template 1</p>
+                                <button class="w-full py-1.5 border border-gray-200 rounded text-[10px] font-bold text-gray-600">Button</button>
+                            </div>
+                        </div>
+                        <p class="text-center text-[10px] text-gray-400 font-medium mt-4">Drag cards to reorder • Maximum 10 cards</p>
+                    </div>
+
+                    <!-- URL and Button -->
+                    <div class="flex gap-4 mb-6">
+                        <div class="flex-1">
+                            <label class="block text-[11px] font-bold text-gray-700 mb-1">URL (When this button is Pressed) <i class="fas fa-info-circle text-gray-300 ml-1"></i></label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-link text-gray-400 text-[10px]"></i>
+                                </div>
+                                <input type="text" placeholder="Enter url" class="w-full pl-8 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-xs focus:ring-1 focus:ring-black outline-none shadow-sm">
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-[11px] font-bold text-gray-700 mb-1">Button Title <i class="fas fa-info-circle text-gray-300 ml-1"></i></label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-font text-gray-400 text-[10px]"></i>
+                                </div>
+                                <input type="text" id="inputButtonTitle" placeholder="Enter Title" value="Button Title" class="w-full pl-8 pr-12 py-2 bg-white border border-gray-200 rounded-lg text-xs focus:ring-1 focus:ring-black outline-none shadow-sm">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[10px] text-gray-400">0/40</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-center mb-6">
+                        <button class="px-4 py-1.5 border border-dashed border-black rounded-full text-[10px] font-bold flex items-center hover:bg-gray-50 transition">
+                            <i class="fas fa-plus mr-1.5"></i> Add New Button (1/3)
+                        </button>
+                    </div>
+
+                    <!-- Image, Headline, Description -->
+                    <div class="flex gap-5">
+                        <!-- Image Upload -->
+                        <div class="w-1/3 bg-white border border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-black transition h-40">
+                            <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 mb-2 relative">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <div class="absolute bottom-0 right-0 w-3 h-3 bg-black rounded-full text-white flex items-center justify-center text-[7px]"><i class="fas fa-plus"></i></div>
+                            </div>
+                            <span class="text-[9px] font-bold text-gray-400 text-center px-4">Upload Image Recommended size 10mb</span>
+                        </div>
+                        
+                        <!-- Text Fields -->
+                        <div class="flex-1 space-y-4">
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-700 mb-1">Headline <i class="fas fa-info-circle text-gray-300 ml-1"></i></label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-heading text-gray-400 text-[10px]"></i>
+                                    </div>
+                                    <input type="text" id="inputHeadline" placeholder="Enter headline" value="Instagram & Facebook DM Automation" class="w-full pl-8 pr-12 py-2 bg-white border border-gray-200 rounded-lg text-xs focus:ring-1 focus:ring-black outline-none shadow-sm">
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[10px] text-gray-400">0/40</div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-700 mb-1">Text Description <i class="fas fa-info-circle text-gray-300 ml-1"></i> <i class="fas fa-crown text-yellow-400 ml-1"></i></label>
+                                <div class="relative">
+                                    <textarea id="inputDescription" rows="3" class="w-full p-3 bg-gray-100 border border-transparent rounded-lg text-xs focus:bg-white focus:border-gray-300 focus:ring-1 focus:ring-black outline-none resize-none">Automation Powered by @replyrush</textarea>
+                                    <div class="absolute bottom-2 right-3 text-[10px] text-gray-400 font-medium">32/500 <i class="fas fa-pen ml-1"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Save Button -->
+            <div class="flex justify-center pt-4">
+                <button class="px-8 py-2 border-2 border-black rounded-lg font-bold text-xs flex items-center hover:bg-black hover:text-white transition">
+                    <i class="fas fa-save mr-2"></i> Save
+                </button>
+            </div>
+            
+        </div>
+
+        <!-- Right Column: Phone Preview -->
+        <div class="w-full xl:w-1/3 flex flex-col items-center sticky top-24">
+            <div class="w-full max-w-[320px] bg-gray-100/50 rounded-full py-1.5 flex justify-center items-center text-[10px] font-bold text-gray-500 mb-4 border border-gray-200 shadow-sm">
+                <span class="text-yellow-400 mr-2">✨</span> Self DM Preview
+            </div>
+
+            <!-- Phone Frame -->
+            <div class="w-[300px] h-[600px] bg-white border-8 border-black rounded-[2.5rem] shadow-xl relative overflow-hidden flex flex-col">
+                <!-- Status Bar -->
+                <div class="h-6 w-full flex items-center justify-between px-5 pt-1">
+                    <span class="text-[9px] font-semibold text-black">9:41</span>
+                    <div class="flex items-center space-x-1">
+                        <i class="fas fa-signal text-[8px]"></i>
+                        <i class="fas fa-wifi text-[8px]"></i>
+                        <i class="fas fa-battery-full text-[10px]"></i>
+                    </div>
+                </div>
+
+                <!-- Chat Header -->
+                <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-white z-10">
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-left text-xs mr-3"></i>
+                        <span class="text-[11px] font-bold">encrypt_technology</span>
+                    </div>
+                    <div class="flex items-center space-x-3 text-gray-800">
+                        <i class="fas fa-phone-alt text-xs"></i>
+                        <i class="fas fa-video text-xs"></i>
+                    </div>
+                </div>
+
+                <!-- Chat Area -->
+                <div class="flex-1 bg-white p-3 overflow-y-auto pb-4">
+                    <!-- Received Media Message -->
+                    <div class="w-full max-w-[85%] bg-gray-100 rounded-2xl rounded-tl-sm p-3 shadow-sm border border-gray-50">
+                        <!-- Image placeholder 'R' -->
+                        <div class="w-full h-36 bg-gray-200 rounded-lg flex items-center justify-center mb-3">
+                            <span class="text-[100px] font-black text-black leading-none">R</span>
+                        </div>
+                        
+                        <p id="previewHeadline" class="text-xs font-bold text-gray-900 mb-1 leading-tight">Instagram & Facebook DM Automation</p>
+                        <p id="previewDescription" class="text-[10px] text-gray-600 mb-4 leading-snug">Automation Powered by @replyrush</p>
+                        
+                        <!-- Button -->
+                        <div class="w-full py-2 bg-white border border-gray-200 rounded-lg flex justify-center items-center shadow-sm">
+                            <span id="previewButtonTitle" class="text-[11px] font-bold text-gray-900">Button Title</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="px-4 py-3 border-t border-gray-100 bg-white">
+                    <div class="w-full bg-gray-100 rounded-full py-2 px-3 flex items-center">
+                        <div class="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white mr-2">
+                            <i class="fas fa-camera text-[10px]"></i>
+                        </div>
+                        <span class="text-[11px] text-gray-400 flex-1">Message...</span>
+                        <div class="flex space-x-2 text-gray-400 text-xs">
+                            <i class="fas fa-microphone"></i>
+                            <i class="fas fa-image"></i>
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Home Indicator -->
+                <div class="w-32 h-1 bg-black rounded-full absolute bottom-2 left-1/2 transform -translate-x-1/2"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Live Data Binding logic
+    document.addEventListener('DOMContentLoaded', () => {
+        const titleInput = document.getElementById('inputButtonTitle');
+        const headlineInput = document.getElementById('inputHeadline');
+        const descInput = document.getElementById('inputDescription');
+
+        const titlePreview = document.getElementById('previewButtonTitle');
+        const headlinePreview = document.getElementById('previewHeadline');
+        const descPreview = document.getElementById('previewDescription');
+
+        function updatePreview() {
+            titlePreview.textContent = titleInput.value || 'Button Title';
+            headlinePreview.textContent = headlineInput.value || 'Headline';
+            descPreview.textContent = descInput.value || 'Description text...';
+        }
+
+        titleInput.addEventListener('input', updatePreview);
+        headlineInput.addEventListener('input', updatePreview);
+        descInput.addEventListener('input', updatePreview);
+    });
+</script>
+{% endblock %}

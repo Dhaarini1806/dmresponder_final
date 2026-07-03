@@ -23,10 +23,10 @@
 
 <!-- Connect Modal -->
 <div id="connectModal" class="modal">
-    <div class="modal-content p-8">
+    <div class="modal-content p-8 animate-in fade-in zoom-in-95 duration-200">
         <div class="flex items-center justify-between mb-8">
             <h2 class="text-xl font-bold text-gray-900">Connect Account</h2>
-            <button onclick="closeModal('connectModal')" class="text-gray-400 hover:text-gray-600">
+            <button onclick="closeModal('connectModal'); resetConnectForm();" class="text-gray-400 hover:text-gray-600">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -56,11 +56,27 @@
                         <label class="block text-xs font-bold text-gray-700 mb-1">Password</label>
                         <input type="password" id="igPassword" placeholder="Password" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-[#933fe2] outline-none transition-all">
                     </div>
-                    <button id="btnConnectReal" onclick="connectRealAccount()" class="w-full btn-primary py-3">
-                        Securely Connect
+                    <div id="ig2faContainer" class="hidden transition-all duration-300 transform scale-95 opacity-0 max-h-0 overflow-hidden" style="max-height: 0; opacity: 0; transition: all 0.3s ease-out;">
+                        <label class="block text-xs font-bold text-[#933fe2] mb-1">Two-Factor Verification Code</label>
+                        <input type="text" id="ig2faCode" placeholder="6-digit verification code" class="w-full px-4 py-3 bg-indigo-50/50 border border-indigo-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-[#933fe2] outline-none transition-all font-semibold tracking-widest text-center text-gray-800">
+                        <p class="text-[10px] text-indigo-500 mt-1 font-medium">Please check your authenticator app or SMS/email for a verification code and enter it above.</p>
+                    </div>
+                    <button id="btnConnectReal" onclick="connectRealAccount()" class="w-full btn-primary py-3 transition-all duration-200 active:scale-98">
+                        Securely Connect Instagram
                     </button>
                     <p class="text-[10px] text-gray-400 text-center">Your credentials are used securely by instagrapi to generate a session token.</p>
                 </div>
+            </div>
+
+            <div class="mt-6 border-t border-gray-100 pt-6 opacity-60">
+                <h3 class="text-sm font-bold text-gray-900 mb-2 flex items-center">
+                    <i class="fab fa-facebook text-blue-600 mr-2 text-lg"></i>
+                    Facebook Account
+                </h3>
+                <p class="text-[10px] text-gray-500 mb-3">Connect your Facebook Page for automated Messenger replies.</p>
+                <button class="w-full py-3 bg-gray-100 text-gray-400 font-bold rounded-lg cursor-not-allowed text-sm">
+                    Coming Soon
+                </button>
             </div>
         </div>
     </div>
@@ -69,56 +85,67 @@
 {% block extra_js %}
 <script>
     async function loadAccounts() {
-        const r = await fetch('/api/instagram/accounts/');
-        const data = await r.json();
-        const container = document.getElementById('accountsList');
-        
-        if (data.results && data.results.length > 0) {
-            container.innerHTML = data.results.map(acc => `
-                <div class="card p-6 flex flex-col h-full">
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-12 h-12 bg-gradient-to-tr from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white text-xl">
-                                <i class="fab fa-instagram"></i>
+        try {
+            const r = await fetch('/api/instagram/accounts/');
+            if (!r.ok) {
+                console.error('Failed to load accounts:', r.status, r.statusText);
+                return;
+            }
+            const data = await r.json();
+            // API may return paginated {results:[...]} or flat [...]
+            const accounts = Array.isArray(data) ? data : (data.results || []);
+            const container = document.getElementById('accountsList');
+            console.log('Loaded accounts:', accounts);
+            
+            if (accounts.length > 0) {
+                container.innerHTML = accounts.map(acc => `
+                    <div class="card p-6 flex flex-col h-full">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-tr from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white text-xl">
+                                    <i class="fab fa-instagram"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-900">@${acc.username}</p>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">${acc.status === 'demo' ? 'Demo Mode' : acc.status === 'connected' ? 'Connected' : acc.status}</p>
+                                </div>
                             </div>
-                            <div>
-                                <p class="font-bold text-gray-900">@${acc.username}</p>
-                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">${acc.status === 'demo' ? 'Demo Mode' : 'Connected'}</p>
+                            <div class="w-2 h-2 rounded-full ${acc.status === 'connected' || acc.status === 'demo' ? 'bg-green-500' : 'bg-yellow-500'}"></div>
+                        </div>
+                        
+                        <div class="space-y-4 mb-8 flex-1">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-400 font-medium">Last Sync</span>
+                                <span class="text-gray-900 font-bold">${acc.last_sync ? new Date(acc.last_sync).toLocaleString() : 'Never'}</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-400 font-medium">Automations</span>
+                                <span class="text-gray-900 font-bold">${acc.automation_status ? 'Active' : 'Paused'}</span>
                             </div>
                         </div>
-                        <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                    </div>
-                    
-                    <div class="space-y-4 mb-8 flex-1">
-                        <div class="flex justify-between text-xs">
-                            <span class="text-gray-400 font-medium">Last Sync</span>
-                            <span class="text-gray-900 font-bold">Just now</span>
-                        </div>
-                        <div class="flex justify-between text-xs">
-                            <span class="text-gray-400 font-medium">Automations</span>
-                            <span class="text-gray-900 font-bold">Active</span>
+                        
+                        <div class="flex space-x-2">
+                            <a href="/automation/reels/?account=${acc.id}" class="flex-1 btn-primary text-center text-xs py-2.5">View Reels</a>
+                            <button onclick="deleteAccount(${acc.id})" class="p-2.5 border border-gray-200 rounded-lg text-gray-400 hover:text-red-600 hover:border-red-100 transition-all">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
                         </div>
                     </div>
-                    
-                    <div class="flex space-x-2">
-                        <a href="/automation/reels/?account=${acc.id}" class="flex-1 btn-primary text-center text-xs py-2.5">View Reels</a>
-                        <button onclick="deleteAccount(${acc.id})" class="p-2.5 border border-gray-200 rounded-lg text-gray-400 hover:text-red-600 hover:border-red-100 transition-all">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
+                `).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="col-span-full py-20 text-center">
+                        <div class="w-20 h-20 bg-gray-50 rounded-3xl flex items-center justify-center text-gray-200 mx-auto mb-6">
+                            <i class="fas fa-link text-3xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">No accounts connected</h3>
+                        <p class="text-gray-500 mt-1 mb-8">Connect your first account to start automating your DMs.</p>
+                        <button class="btn-primary px-8" onclick="openModal('connectModal')">Connect Now</button>
                     </div>
-                </div>
-            `).join('');
-        } else {
-            container.innerHTML = `
-                <div class="col-span-full py-20 text-center">
-                    <div class="w-20 h-20 bg-gray-50 rounded-3xl flex items-center justify-center text-gray-200 mx-auto mb-6">
-                        <i class="fas fa-link text-3xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900">No accounts connected</h3>
-                    <p class="text-gray-500 mt-1 mb-8">Connect your first account to start automating your DMs.</p>
-                    <button class="btn-primary px-8" onclick="openModal('connectModal')">Connect Now</button>
-                </div>
-            `;
+                `;
+            }
+        } catch(err) {
+            console.error('Error loading accounts:', err);
         }
     }
 
@@ -128,12 +155,18 @@
             method: 'POST',
             headers: { 'X-CSRFToken': getCookie('csrftoken') }
         });
-        if (r.ok) loadAccounts();
+        if (r.ok) {
+            loadAccounts();
+        } else {
+            const data = await r.json().catch(() => ({}));
+            alert('Failed to create demo account: ' + (data.error || r.statusText));
+        }
     }
 
     async function connectRealAccount() {
         const user = document.getElementById('igUsername').value.trim();
         const pass = document.getElementById('igPassword').value;
+        const verificationCode = document.getElementById('ig2faCode').value.trim();
         const btn = document.getElementById('btnConnectReal');
         
         if (!user || !pass) {
@@ -151,24 +184,68 @@
                     'Content-Type': 'application/json',
                     'X-CSRFToken': getCookie('csrftoken') 
                 },
-                body: JSON.stringify({ username: user, password: pass })
+                body: JSON.stringify({ 
+                    username: user, 
+                    password: pass,
+                    verification_code: verificationCode || null
+                })
             });
+            
+            const data = await r.json().catch(() => ({}));
             
             if (r.ok) {
                 closeModal('connectModal');
-                document.getElementById('igUsername').value = '';
-                document.getElementById('igPassword').value = '';
+                resetConnectForm();
                 loadAccounts();
             } else {
-                const data = await r.json();
-                alert(`Connection failed: ${data.error || 'Unknown error'}`);
+                if (r.status === 202 && data.status === 'two_factor_required') {
+                    // Show 2FA input container
+                    const container = document.getElementById('ig2faContainer');
+                    container.classList.remove('hidden');
+                    // Trigger smooth animation
+                    setTimeout(() => {
+                        container.style.opacity = '1';
+                        container.style.maxHeight = '200px';
+                        container.style.transform = 'scale(1)';
+                    }, 50);
+                    
+                    document.getElementById('ig2faCode').focus();
+                    
+                    btn.innerHTML = 'Submit Verification Code';
+                    btn.disabled = false;
+                    
+                    alert(data.error || 'Two-Factor verification required. Please enter the verification code and click Submit.');
+                } else if (r.status === 202 && data.status === 'challenge_required') {
+                    alert(`Instagram login requires confirmation: ${data.error}\n\n${data.challenge_url ? 'Link: ' + data.challenge_url : 'Please approve the login attempt on your Instagram mobile app, then click connect again.'}`);
+                    btn.innerHTML = 'Securely Connect Instagram';
+                    btn.disabled = false;
+                } else {
+                    alert(`Connection failed: ${data.error || 'Unknown error'}`);
+                    btn.innerHTML = 'Securely Connect Instagram';
+                    btn.disabled = false;
+                }
             }
         } catch (e) {
             alert('Network error connecting account.');
-        } finally {
-            btn.innerHTML = 'Securely Connect';
+            btn.innerHTML = 'Securely Connect Instagram';
             btn.disabled = false;
         }
+    }
+
+    function resetConnectForm() {
+        document.getElementById('igUsername').value = '';
+        document.getElementById('igPassword').value = '';
+        document.getElementById('ig2faCode').value = '';
+        const container = document.getElementById('ig2faContainer');
+        container.style.opacity = '0';
+        container.style.maxHeight = '0';
+        container.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            container.classList.add('hidden');
+        }, 300);
+        const btn = document.getElementById('btnConnectReal');
+        btn.innerHTML = 'Securely Connect Instagram';
+        btn.disabled = false;
     }
 
     async function deleteAccount(id) {

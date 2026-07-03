@@ -12,7 +12,7 @@ from core.views import (
 from core.dashboard_views import (
     dashboard, connected_accounts, automation_reels, inbox,
     crm_leads, analytics, broadcasts, settings, content_calendar,
-    link_post, engagement_starter
+    link_post, engagement_starter, stories, default_settings
 )
 from instagram.views import (
     InstagramAccountViewSet, FacebookPageViewSet, WhatsAppAccountViewSet,
@@ -83,6 +83,8 @@ urlpatterns = [
     path('dashboard/', dashboard, name='dashboard'),
     path('instagram/connected-accounts/', connected_accounts, name='connected_accounts'),
     path('automation/reels/', automation_reels, name='automation_reels'),
+    path('automation/stories/', stories, name='stories'),
+    path('automation/default-settings/', default_settings, name='default_settings'),
     path('automation/link-post/<int:reel_id>/', link_post, name='link_post'),
     path('automation/engagement-starter/', engagement_starter, name='engagement_starter'),
     path('inbox/', inbox, name='inbox'),
@@ -98,6 +100,7 @@ urlpatterns = [
     # Auth
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('accounts/', include('allauth.urls')),
     
     # API
     path('api/', include(router.urls)),
