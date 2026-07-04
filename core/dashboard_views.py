@@ -65,3 +65,8 @@ def stories(request):
 def default_settings(request):
     """Default Settings page with Media Template builder"""
     return render(request, 'default_settings.html')
+
+@login_required
+def pricing_plans(request):
+    """Pricing Plans page"""
+    return render(request, 'pricing_plans.html')

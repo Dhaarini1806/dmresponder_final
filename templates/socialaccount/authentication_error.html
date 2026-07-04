@@ -1,0 +1,31 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Third-Party Login Failure - DMResponder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen">
+    <div class="max-w-md w-full bg-white p-8 rounded-xl shadow-lg text-center">
+        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+            <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+        </div>
+        
+        <h2 class="text-3xl font-bold mb-4 text-gray-900">Login Failure</h2>
+        
+        <p class="text-gray-600 mb-8">
+            An error occurred while attempting to login via your third-party account. The provider may have rejected the request or your credentials might be misconfigured.
+        </p>
+
+        <a href="{% url 'account_login' %}" class="w-full inline-block bg-[#0c1220] text-white font-bold py-3 px-4 rounded hover:bg-[#1a2233] transition">
+            Try Again
+        </a>
+        
+        <p class="mt-6 text-sm text-gray-500"><a href="/" class="hover:underline text-indigo-600">Return to home</a></p>
+    </div>
+</body>
+</html>

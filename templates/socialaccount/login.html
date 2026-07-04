@@ -1,0 +1,31 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In Via {{ provider.name }} - DMResponder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen">
+    <div class="max-w-md w-full bg-white p-8 rounded-xl shadow-lg text-center">
+        <h2 class="text-3xl font-bold mb-4">Sign In Via {{ provider.name }}</h2>
+        
+        <p class="text-gray-600 mb-8">
+            {% blocktrans with provider.name as provider %}You are about to sign in using a third-party account from {{ provider }}.{% endblocktrans %}
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="w-full flex items-center justify-center bg-white border border-gray-300 text-gray-700 font-bold py-3 px-4 rounded hover:bg-gray-50 transition">
+                {% if provider.id == 'google' %}
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5 mr-2" alt="Google Logo">
+                {% endif %}
+                Continue with {{ provider.name }}
+            </button>
+        </form>
+        
+        <p class="mt-6 text-sm text-gray-500"><a href="/" class="hover:underline text-indigo-600">Cancel and return to home</a></p>
+    </div>
+</body>
+</html>

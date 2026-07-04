@@ -1,0 +1,256 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Pricing Plans — DMResponder{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex justify-between items-end">
+    <div>
+        <div class="flex items-center text-sm text-gray-500 mb-2">
+            <a href="#" class="hover:text-gray-900">Home</a>
+            <i class="fas fa-chevron-right mx-2 text-[10px]"></i>
+            <span class="text-gray-900 font-medium">Pricing Plan</span>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">Pricing Plan</h1>
+    </div>
+    <button class="bg-white border border-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-50 text-sm shadow-sm transition">
+        Download Invoices
+    </button>
+</div>
+
+<!-- Plan Toggles -->
+<div class="flex justify-center mb-10">
+    <div class="flex items-center space-x-4 bg-white border border-gray-200 p-1 rounded-full shadow-sm">
+        <button class="px-6 py-2 rounded-full font-bold text-sm text-gray-500 hover:text-gray-900">Yearly</button>
+        <button class="px-6 py-2 rounded-full font-bold text-sm bg-white shadow-sm border border-gray-100 text-gray-900">Monthly</button>
+        <button class="px-6 py-2 rounded-full font-bold text-sm text-gray-500 hover:text-gray-900 relative">
+            Pay As You Go
+            <span class="absolute -top-3 -right-2 bg-black text-yellow-400 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap"><i class="fas fa-gift mr-1"></i>+50% Extra</span>
+        </button>
+        <a href="#how-it-works" class="px-6 py-2 rounded-full font-bold text-sm text-indigo-600 hover:text-indigo-800 underline">How It Works</a>
+    </div>
+</div>
+
+<!-- Pricing Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+    
+    <!-- MAX Plan -->
+    <div class="bg-white rounded-2xl border border-green-200 shadow-sm overflow-hidden flex flex-col relative pt-6">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-green-400"></div>
+        <div class="absolute top-0 left-1/2 transform -translate-x-1/2 bg-green-100 text-green-700 text-[10px] font-bold px-4 py-1 rounded-b-lg uppercase tracking-wider">Recommended</div>
+        
+        <div class="p-6 border-b border-gray-100">
+            <h3 class="text-xl font-bold text-gray-900 mb-2">MAX <i class="fas fa-info-circle text-gray-300 text-sm"></i></h3>
+            <div class="mb-1">
+                <span class="text-3xl font-bold text-gray-900">$83.33</span>
+                <span class="text-sm text-gray-500 font-medium">/ Monthly (USD)</span>
+            </div>
+            <p class="text-xs text-gray-400 mb-6 font-medium">₹7,083.33 / Monthly (INR)</p>
+            <button class="w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition shadow-md">Subscribe Now</button>
+        </div>
+        
+        <div class="p-6 flex-grow bg-gray-50/30">
+            <ul class="space-y-4 text-sm text-gray-600 font-medium">
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 400,000 Total DM limit</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 5 Instagram Accounts</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 10 Smart Menu</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 10 Future Post Automation</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 180 Data Retention (Days)</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 500 Global Triggers / Per Instagram A/C</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 500 Template Library</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 5 Conditional Trigger</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> Post, Reels & Story Automation</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> AI Generated Triggers</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> Comment Auto Reply</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> Follow Gated DM</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> Engagement Starter</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- BOOST Plan -->
+    <div class="bg-white rounded-2xl border border-indigo-200 shadow-md overflow-hidden flex flex-col relative pt-6 transform scale-105 z-10">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-indigo-500"></div>
+        <div class="absolute top-0 left-1/2 transform -translate-x-1/2 bg-indigo-100 text-indigo-700 text-[10px] font-bold px-4 py-1 rounded-b-lg uppercase tracking-wider">Most Popular</div>
+        
+        <div class="p-6 border-b border-gray-100">
+            <h3 class="text-xl font-bold text-gray-900 mb-2">BOOST <i class="fas fa-info-circle text-gray-300 text-sm"></i></h3>
+            <div class="mb-1">
+                <span class="text-3xl font-bold text-gray-900">$20.83</span>
+                <span class="text-sm text-gray-500 font-medium">/ Monthly (USD)</span>
+            </div>
+            <p class="text-xs text-gray-400 mb-6 font-medium">₹1,791.67 / Monthly (INR)</p>
+            <button class="w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition shadow-md">Subscribe Now</button>
+        </div>
+        
+        <div class="p-6 flex-grow bg-gray-50/30">
+            <ul class="space-y-4 text-sm text-gray-600 font-medium">
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 40,000 Total DM limit</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 3 Instagram Accounts</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 10 Smart Menu</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 10 Future Post Automation</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 180 Data Retention (Days)</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 50 Global Triggers / Per Instagram A/C</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 50 Template Library</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 3 Conditional Trigger</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> Post, Reels & Story Automation</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> AI Generated Triggers</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> Comment Auto Reply</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> Follow Gated DM</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> Engagement Starter</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- LITE Plan -->
+    <div class="bg-white rounded-2xl border border-orange-200 shadow-sm overflow-hidden flex flex-col relative pt-6">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-orange-400"></div>
+        <div class="absolute top-0 left-1/2 transform -translate-x-1/2 bg-orange-100 text-orange-700 text-[10px] font-bold px-4 py-1 rounded-b-lg uppercase tracking-wider">Budget Friendly</div>
+        
+        <div class="p-6 border-b border-gray-100">
+            <h3 class="text-xl font-bold text-gray-900 mb-2">LITE <i class="fas fa-info-circle text-gray-300 text-sm"></i></h3>
+            <div class="mb-1">
+                <span class="text-3xl font-bold text-gray-900">$8.33</span>
+                <span class="text-sm text-gray-500 font-medium">/ Monthly (USD)</span>
+            </div>
+            <p class="text-xs text-gray-400 mb-6 font-medium">₹750.00 / Monthly (INR)</p>
+            <button class="w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition shadow-md">Subscribe Now</button>
+        </div>
+        
+        <div class="p-6 flex-grow bg-gray-50/30">
+            <ul class="space-y-4 text-sm text-gray-600 font-medium">
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 7,500 Total DM limit</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 1 Instagram Account</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 10 Smart Menu</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 5 Future Post Automation</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 180 Data Retention (Days)</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 20 Global Triggers / Per Instagram A/C</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 20 Template Library</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> 2 Conditional Trigger</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> Post, Reels & Story Automation</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> AI Generated Triggers</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> Comment Auto Reply</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> Follow Gated DM</li>
+                <li class="flex items-start"><i class="fas fa-check-circle text-gray-800 mt-0.5 mr-3"></i> Engagement Starter</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Educational Block -->
+<div id="how-it-works" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 max-w-4xl mx-auto mb-20">
+    <div class="flex items-center mb-6 border-b border-gray-100 pb-4">
+        <div class="bg-blue-50 p-3 rounded-xl text-blue-600 mr-4">
+            <i class="fas fa-book-open text-xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900">Understanding DMResponder Pricing Plans & DM Limit Reset</h2>
+    </div>
+    
+    <p class="text-gray-600 mb-8 leading-relaxed">
+        Many users get confused about how DM limits and billing dates work. This guide explains everything step-by-step with simple examples and a chart for easy understanding.
+    </p>
+
+    <div class="space-y-8">
+        <!-- Overview -->
+        <section>
+            <h3 class="text-lg font-bold text-gray-900 flex items-center mb-3"><i class="fas fa-compass text-indigo-500 mr-2"></i> Overview</h3>
+            <p class="text-gray-600 mb-3 text-sm">When you subscribe to a DMResponder plan (like Boost, Pro, or Max), you get access to:</p>
+            <ul class="list-disc pl-5 text-gray-600 text-sm space-y-1 mb-4">
+                <li>Advanced DM automation features (Comment to DM, Follow-Gated DMs, Flow Automation, etc.)</li>
+                <li>A monthly DM limit (like 40K DMs for the Boost plan)</li>
+                <li>Access validity for your chosen billing cycle (monthly or yearly)</li>
+            </ul>
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+                <p class="text-sm text-yellow-800 font-medium">However, there are two important things to understand:</p>
+                <ul class="list-disc pl-5 text-yellow-800 text-sm mt-2">
+                    <li>Your DM limit resets on the <strong>1st of every month</strong>, not on your plan purchase date.</li>
+                    <li>Your plan renewal date stays fixed based on when you purchased the plan.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Example Table -->
+        <section>
+            <h3 class="text-lg font-bold text-gray-900 flex items-center mb-3"><i class="fas fa-lightbulb text-yellow-500 mr-2"></i> Example: How DM Limit and Renewal Work</h3>
+            <p class="text-gray-600 mb-3 text-sm">Suppose you purchase the Boost Plan (40,000 DMs/month) on 25th January.</p>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">What Happens</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">DM Limit</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200 text-sm">
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">25 Jan</td>
+                            <td class="px-6 py-4 text-gray-600">You subscribe to the Boost plan and get 40,000 DMs instantly.</td>
+                            <td class="px-6 py-4 text-green-600 font-bold">40,000 DMs available</td>
+                        </tr>
+                        <tr class="bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">25–31 Jan</td>
+                            <td class="px-6 py-4 text-gray-600">You can use these 40K DMs during the remaining days of January.</td>
+                            <td class="px-6 py-4 text-gray-500 italic">(Balance reduces as you send)</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">1 Feb</td>
+                            <td class="px-6 py-4 text-gray-600">Your DM limit resets automatically to 40,000 again for February.</td>
+                            <td class="px-6 py-4 text-green-600 font-bold">New 40,000 DMs</td>
+                        </tr>
+                        <tr class="bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">25 Feb</td>
+                            <td class="px-6 py-4 text-gray-600">Your plan renews automatically (payment date), but your DM limit does not reset again here—it stays the same because it already reset on Feb 1.</td>
+                            <td class="px-6 py-4 text-gray-500 italic">(No change)</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">1 Mar</td>
+                            <td class="px-6 py-4 text-gray-600">Your DM limit resets again for March.</td>
+                            <td class="px-6 py-4 text-green-600 font-bold">New 40,000 DMs</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Summary Grid -->
+        <div class="grid md:grid-cols-2 gap-8">
+            <section>
+                <h3 class="text-lg font-bold text-gray-900 flex items-center mb-3"><i class="fas fa-sync text-blue-500 mr-2"></i> In Simple Words</h3>
+                <ul class="space-y-2 text-sm text-gray-600">
+                    <li class="flex items-start"><i class="fas fa-check text-green-500 mt-1 mr-2"></i> You get your DM limit immediately when you first subscribe.</li>
+                    <li class="flex items-start"><i class="fas fa-check text-green-500 mt-1 mr-2"></i> Then, your DM limit resets automatically on the 1st of every month (not your renewal date).</li>
+                    <li class="flex items-start"><i class="fas fa-check text-green-500 mt-1 mr-2"></i> Your billing/renewal date only affects payment and plan validity, not your DM count.</li>
+                </ul>
+            </section>
+            
+            <section>
+                <h3 class="text-lg font-bold text-gray-900 flex items-center mb-3"><i class="fas fa-file-invoice text-red-400 mr-2"></i> Cancelled Plans</h3>
+                <ul class="space-y-2 text-sm text-gray-600">
+                    <li class="flex items-start"><i class="fas fa-times text-gray-400 mt-1 mr-2"></i> You'll still have access to your plan features until your billing cycle ends.</li>
+                    <li class="flex items-start"><i class="fas fa-times text-gray-400 mt-1 mr-2"></i> You can continue using your remaining DMs during that time.</li>
+                    <li class="flex items-start"><i class="fas fa-times text-gray-400 mt-1 mr-2"></i> Once expired, all premium features and DM sending ability are paused.</li>
+                </ul>
+            </section>
+        </div>
+
+        <!-- FAQs -->
+        <section class="border-t border-gray-100 pt-6">
+            <h3 class="text-lg font-bold text-gray-900 flex items-center mb-4"><i class="fas fa-comments text-purple-500 mr-2"></i> Common Questions</h3>
+            <div class="space-y-4">
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <p class="font-bold text-gray-900 text-sm mb-1">Q: Why didn't my DM limit renew on my billing date?</p>
+                    <p class="text-gray-600 text-sm">A: Because DM limits refresh on the 1st of each month, not when you pay. Your billing date only controls payment and plan validity.</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <p class="font-bold text-gray-900 text-sm mb-1">Q: If I buy a plan on the 28th, do I lose days?</p>
+                    <p class="text-gray-600 text-sm">A: No. You get full DMs instantly and another full reset on the 1st. That means you get a few extra DMs in your first few days.</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <p class="font-bold text-gray-900 text-sm mb-1">Q: What if I cancel right after buying?</p>
+                    <p class="text-gray-600 text-sm">A: You can still use your DMs until your plan expires. After that, automation stops.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

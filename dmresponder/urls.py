@@ -12,11 +12,11 @@ from core.views import (
 from core.dashboard_views import (
     dashboard, connected_accounts, automation_reels, inbox,
     crm_leads, analytics, broadcasts, settings, content_calendar,
-    link_post, engagement_starter, stories, default_settings
+    link_post, engagement_starter, stories, default_settings, pricing_plans
 )
 from instagram.views import (
     InstagramAccountViewSet, FacebookPageViewSet, WhatsAppAccountViewSet,
-    InstagramReelViewSet, CommentLogViewSet, DMLogViewSet
+    InstagramReelViewSet, CommentLogViewSet, DMLogViewSet, meta_webhook
 )
 from automation.views import (
     AutomationWorkflowViewSet, WorkflowNodeViewSet,
@@ -92,6 +92,7 @@ urlpatterns = [
     path('analytics/', analytics, name='analytics'),
     path('broadcasts/', broadcasts, name='broadcasts'),
     path('settings/', settings, name='settings'),
+    path('pricing/', pricing_plans, name='pricing_plans'),
     path('calendar/', content_calendar, name='content_calendar'),
 
     # Admin
@@ -101,6 +102,9 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('accounts/', include('allauth.urls')),
+    
+    # Webhooks
+    path('api/webhooks/meta/', meta_webhook, name='meta_webhook'),
     
     # API
     path('api/', include(router.urls)),
